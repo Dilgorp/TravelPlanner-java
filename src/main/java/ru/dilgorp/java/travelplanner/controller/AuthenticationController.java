@@ -23,7 +23,6 @@ public class AuthenticationController {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
 
-    @Autowired
     public AuthenticationController(UserRepository userRepository, BCryptPasswordEncoder encoder) {
         this.userRepository = userRepository;
         this.encoder = encoder;
@@ -33,7 +32,7 @@ public class AuthenticationController {
     public AuthenticationResponse postRegistration(User user){
         User userFromDb = userRepository.findByUsername(user.getUsername());
         if(userFromDb != null){
-            return new AuthenticationResponse(ResponseType.ERROR, "User already exists");
+            return new AuthenticationResponse(ResponseType.ERROR, "Пользователь уже существует");
         }
 
         User userForSaving = new User(user.getUsername(), encoder.encode(user.getPassword()));
