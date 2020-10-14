@@ -7,23 +7,27 @@ import com.google.maps.PlacesApi;
 import com.google.maps.errors.ApiException;
 import com.google.maps.model.FindPlaceFromText;
 import com.google.maps.model.PlaceDetails;
-import com.google.maps.model.PlacesSearchResult;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import ru.dilgorp.java.travelplanner.domain.UserRequest;
 import ru.dilgorp.java.travelplanner.repository.UserRequestRepository;
 import ru.dilgorp.java.travelplanner.response.CitySearchResponse;
 import ru.dilgorp.java.travelplanner.response.ResponseType;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Date;
+import java.util.UUID;
 
 @RestController
 public class SearchController {
 
     public static final int SEC_PER_DAY = 86400;
+    public static final String SEARCH_CITY_PATH = "/search/city/{cityname}";
+    public static final String SEARCH_CITY_PHOTOS_PATH = "/search/photo/city/";
+    public static final String SEARCH_CITY_PHOTO_PATH = SEARCH_CITY_PHOTOS_PATH + "{uuid}";
 
     @Value("${google.place-api.key}")
     private String googlePlaceApiKey;
@@ -43,7 +47,7 @@ public class SearchController {
         this.userRequestRepository = userRequestRepository;
     }
 
-    @RequestMapping(value = "/search/city/{cityname}", method = RequestMethod.GET)
+    @RequestMapping(value = SEARCH_CITY_PATH, method = RequestMethod.GET)
     public CitySearchResponse getCityInfo(@PathVariable("cityname") String cityName) {
         String textSearch = cityName.toLowerCase();
         UserRequest userRequestFromDB = userRequestRepository.findByText(textSearch);
@@ -60,6 +64,18 @@ public class SearchController {
         }
 
         return response;
+    }
+
+    @RequestMapping(value = SEARCH_CITY_PHOTO_PATH, method = RequestMethod.GET)
+    public byte[] getCityPhoto(@PathVariable("uuid") UUID uuid) throws IOException {
+        UserRequest requestFromDB = userRequestRepository.getOne(uuid);
+
+        InputStream inputStream = new FileInputStream(requestFromDB.getImagePath());
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(inputStream.readAllBytes());
+
+        return outputStream.toByteArray();
     }
 
     private void loadCityInfo(String cityName) {
