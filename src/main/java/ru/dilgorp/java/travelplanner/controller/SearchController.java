@@ -1,65 +1,74 @@
 package ru.dilgorp.java.travelplanner.controller;
 
-import com.google.maps.FindPlaceFromTextRequest;
-import com.google.maps.GeoApiContext;
-import com.google.maps.ImageResult;
-import com.google.maps.PlacesApi;
-import com.google.maps.errors.ApiException;
-import com.google.maps.model.FindPlaceFromText;
-import com.google.maps.model.PlaceDetails;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.core.task.SyncTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.web.bind.annotation.*;
 import ru.dilgorp.java.travelplanner.domain.UserRequest;
 import ru.dilgorp.java.travelplanner.repository.UserRequestRepository;
 import ru.dilgorp.java.travelplanner.response.CitySearchResponse;
 import ru.dilgorp.java.travelplanner.response.ResponseType;
+import ru.dilgorp.java.travelplanner.task.search.LoadCityInfoTask;
+import ru.dilgorp.java.travelplanner.task.search.LoadPlacesTask;
+import ru.dilgorp.java.travelplanner.task.search.options.SearchTaskOptions;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.UUID;
 
+@SuppressWarnings("unused")
 @RestController
 public class SearchController {
 
-    public static final int SEC_PER_DAY = 86400;
-    public static final String SEARCH_CITY_PATH = "/search/city/{cityname}";
+    private static final String SEARCH_CITY_PATH = "/search/city/{cityname}";
     public static final String SEARCH_CITY_PHOTOS_PATH = "/search/photo/city/";
-    public static final String SEARCH_CITY_PHOTO_PATH = SEARCH_CITY_PHOTOS_PATH + "{uuid}";
+    private static final String SEARCH_CITY_PHOTO_PATH = SEARCH_CITY_PHOTOS_PATH + "{uuid}";
+    public static final String SEARCH_CITY_PLACES_PATH = "/search/places/city/";
+    private static final String SEARCH_CITY_PLACES_BY_UUID_PATH = SEARCH_CITY_PLACES_PATH + "{uuid}";
 
-    @Value("${google.place-api.key}")
-    private String googlePlaceApiKey;
+    public static final String ASYNC_TASK_EXECUTOR_NAME = "ru.dilgorp.java.travelplanner.loadAsyncTaskExecutor";
 
-    @Value("${google.place-api.language}")
-    private String googlePlaceLanguage;
+    private final SearchTaskOptions searchTaskOptions;
+    private final SyncTaskExecutor syncTaskExecutor;
+    private final ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
-    @Value("${google.place-api.photos.folder}")
-    private String googlePlacePhotosFolder;
-
-    @Value("${google.place-api.expired-days}")
-    private int googlePlaceExpiredDays;
-
-    private final UserRequestRepository userRequestRepository;
-
-    public SearchController(UserRequestRepository userRequestRepository) {
-        this.userRequestRepository = userRequestRepository;
+    public SearchController(
+            SearchTaskOptions searchTaskOptions,
+            SyncTaskExecutor syncTaskExecutor,
+            ThreadPoolTaskExecutor threadPoolTaskExecutor
+    ) {
+        this.searchTaskOptions = searchTaskOptions;
+        this.syncTaskExecutor = syncTaskExecutor;
+        this.threadPoolTaskExecutor = threadPoolTaskExecutor;
     }
 
     @RequestMapping(value = SEARCH_CITY_PATH, method = RequestMethod.GET)
     public CitySearchResponse getCityInfo(@PathVariable("cityname") String cityName) {
         String textSearch = cityName.toLowerCase();
+        UserRequestRepository userRequestRepository = searchTaskOptions.getUserRequestRepository();
+
         UserRequest userRequestFromDB = userRequestRepository.findByText(textSearch);
-        if (userRequestFromDB == null || userRequestFromDB.getExpired().compareTo(new Date()) <= 0) {
-            loadCityInfo(cityName);
+        LoadCityInfoTask task =
+                new LoadCityInfoTask(
+                        cityName,
+                        userRequestFromDB,
+                        searchTaskOptions
+                );
+
+        if (userRequestFromDB == null) {
+            syncTaskExecutor.execute(task);
+            userRequestFromDB = userRequestRepository.findByText(textSearch);
         }
 
-        userRequestFromDB = userRequestRepository.findByText(textSearch);
         CitySearchResponse response;
         if (userRequestFromDB == null) {
             response = new CitySearchResponse(ResponseType.ERROR, "Город не найден", null);
         } else {
+            if (userRequestFromDB.getExpired().compareTo(new Date()) <= 0) {
+                threadPoolTaskExecutor.execute(task);
+            }
             response = new CitySearchResponse(ResponseType.SUCCESS, "", userRequestFromDB);
         }
 
@@ -68,7 +77,7 @@ public class SearchController {
 
     @RequestMapping(value = SEARCH_CITY_PHOTO_PATH, method = RequestMethod.GET)
     public byte[] getCityPhoto(@PathVariable("uuid") UUID uuid) throws IOException {
-        UserRequest requestFromDB = userRequestRepository.getOne(uuid);
+        UserRequest requestFromDB = searchTaskOptions.getUserRequestRepository().getOne(uuid);
 
         InputStream inputStream = new FileInputStream(requestFromDB.getImagePath());
 
@@ -78,59 +87,18 @@ public class SearchController {
         return outputStream.toByteArray();
     }
 
-    private void loadCityInfo(String cityName) {
-        GeoApiContext context = new GeoApiContext.Builder().apiKey(googlePlaceApiKey).build();
-        try {
-            FindPlaceFromText response =
-                    PlacesApi.findPlaceFromText(
-                            context,
-                            cityName,
-                            FindPlaceFromTextRequest.InputType.TEXT_QUERY
-                    ).await();
+    @RequestMapping(value = SEARCH_CITY_PLACES_BY_UUID_PATH, method = RequestMethod.GET)
+    public String getCityPlaces(@PathVariable("uuid") UUID uuid, @RequestParam(defaultValue = "") String pageToken) throws Exception {
 
-            if (response.candidates.length < 1) {
-                return;
-            }
 
-            PlaceDetails placeDetails =
-                    PlacesApi.placeDetails(context, response.candidates[0].placeId)
-                            .language(googlePlaceLanguage)
-                            .await();
+        LoadPlacesTask loadPlacesTask =
+                new LoadPlacesTask(
+                        uuid,
+                        pageToken,
+                        searchTaskOptions
+                );
 
-            UserRequest request = new UserRequest();
-            fillUserRequest(request, placeDetails, cityName);
 
-            if (placeDetails.photos.length < 1) {
-                userRequestRepository.save(request);
-                return;
-            }
-
-            ImageResult imageResult =
-                    PlacesApi.photo(context, placeDetails.photos[0].photoReference)
-                            .maxWidth(placeDetails.photos[0].width).
-                            await();
-
-            String filePath = googlePlacePhotosFolder + placeDetails.name + "." + imageResult.contentType.split("/")[1];
-            saveImage(imageResult, filePath);
-            request.setImagePath(filePath);
-            userRequestRepository.save(request);
-        } catch (ApiException | InterruptedException | IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void fillUserRequest(UserRequest request, PlaceDetails details, String cityName) {
-        request.setExpired(new Date(System.currentTimeMillis() + (SEC_PER_DAY * googlePlaceExpiredDays * 1000)));
-        request.setFormattedAddress(details.formattedAddress);
-        request.setName(details.name);
-        request.setText(cityName.toLowerCase());
-    }
-
-    private void saveImage(ImageResult imageResult, String filePath) {
-        try (OutputStream outputStream = new FileOutputStream(filePath)) {
-            outputStream.write(imageResult.imageData);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        return "Done";
     }
 }
