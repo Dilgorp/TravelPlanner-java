@@ -8,8 +8,10 @@ import java.util.List;
 import java.util.UUID;
 
 public interface PlaceRepository extends JpaRepository<Place, UUID>{
-    List<Place> findByUserRequestUUIDAndCurrentPageToken(UUID userRequestUUID, String currentPageToken);
+    List<Place> findByUserRequestUUID(UUID userRequestUUID);
 
     @Query("SELECT COUNT(p.uuid) FROM place p WHERE p.userRequestUUID = ?1")
     int findCountByUserRequestUUID(UUID userRequestUUID);
+
+    List<Place> findByUserRequestUUIDAndCurrentPageToken(UUID requestUUID, String pageToken);
 }

@@ -24,26 +24,24 @@ public class LoadPlacesTask implements Runnable {
     private final UUID requestUUID;
     private final String pageToken;
     private final SearchTaskOptions searchTaskOptions;
-    private final boolean fullLoading;
     private String nextPageToken = null;
 
     public LoadPlacesTask(
             UUID requestUUID,
             String pageToken,
-            SearchTaskOptions searchTaskOptions,
-            boolean fullLoading) {
+            SearchTaskOptions searchTaskOptions
+    ) {
         this.requestUUID = requestUUID;
         this.pageToken = pageToken;
         this.searchTaskOptions = searchTaskOptions;
-        this.fullLoading = fullLoading;
     }
 
     @Override
     public void run() {
         loadPlaces();
-        if (fullLoading && nextPageToken != null && !nextPageToken.isEmpty()) {
+        if (nextPageToken != null && !nextPageToken.isEmpty()) {
             LoadPlacesTask loadPlacesTask = new LoadPlacesTask(
-                    requestUUID, nextPageToken, searchTaskOptions, true
+                    requestUUID, nextPageToken, searchTaskOptions
             );
             loadPlacesTask.run();
         }

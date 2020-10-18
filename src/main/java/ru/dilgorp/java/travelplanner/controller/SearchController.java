@@ -7,15 +7,13 @@ import ru.dilgorp.java.travelplanner.domain.google.api.Place;
 import ru.dilgorp.java.travelplanner.domain.google.api.UserRequest;
 import ru.dilgorp.java.travelplanner.repository.google.api.UserRequestRepository;
 import ru.dilgorp.java.travelplanner.response.CitySearchResponse;
+import ru.dilgorp.java.travelplanner.response.PlaceSearchResponse;
 import ru.dilgorp.java.travelplanner.response.ResponseType;
 import ru.dilgorp.java.travelplanner.task.search.LoadCityInfoTask;
 import ru.dilgorp.java.travelplanner.task.search.LoadPlacesTask;
 import ru.dilgorp.java.travelplanner.task.search.options.SearchTaskOptions;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -27,8 +25,9 @@ public class SearchController {
     private static final String SEARCH_CITY_PATH = "/search/city/{cityname}";
     public static final String SEARCH_CITY_PHOTOS_PATH = "/search/photo/city/";
     private static final String SEARCH_CITY_PHOTO_PATH = SEARCH_CITY_PHOTOS_PATH + "{uuid}";
-    public static final String SEARCH_CITY_PLACES_PATH = "/search/places/city/";
-    private static final String SEARCH_CITY_PLACES_BY_UUID_PATH = SEARCH_CITY_PLACES_PATH + "{uuid}";
+    private static final String SEARCH_CITY_PLACES_PATH = "/search/places/city/{uuid}";
+    public static final String SEARCH_PLACES_PHOTOS_PATH = "/search/places/photo/";
+    private static final String SEARCH_PLACES_PHOTO_PATH = SEARCH_PLACES_PHOTOS_PATH + "{uuid}";
 
     public static final String ASYNC_TASK_EXECUTOR_NAME = "ru.dilgorp.java.travelplanner.loadAsyncTaskExecutor";
 
@@ -78,48 +77,75 @@ public class SearchController {
     }
 
     @RequestMapping(value = SEARCH_CITY_PHOTO_PATH, method = RequestMethod.GET)
-    public byte[] getCityPhoto(@PathVariable("uuid") UUID uuid) throws IOException {
-        UserRequest requestFromDB = searchTaskOptions.getUserRequestRepository().getOne(uuid);
-
-        InputStream inputStream = new FileInputStream(requestFromDB.getImagePath());
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        outputStream.write(inputStream.readAllBytes());
-
-        return outputStream.toByteArray();
+    public byte[] getCityPhoto(@PathVariable("uuid") UUID uuid) {
+        return getImageBytes(
+                searchTaskOptions.getUserRequestRepository()
+                        .getOne(uuid)
+                        .getImagePath()
+        );
     }
 
-    @RequestMapping(value = SEARCH_CITY_PLACES_BY_UUID_PATH, method = RequestMethod.GET)
-    public List<Place> getCityPlaces(@PathVariable("uuid") UUID uuid, @RequestParam(defaultValue = "") String pageToken) {
+    @RequestMapping(value = SEARCH_CITY_PLACES_PATH, method = RequestMethod.GET)
+    public PlaceSearchResponse getCityPlaces(@PathVariable("uuid") UUID uuid) {
 
         List<Place> places =
                 searchTaskOptions.getPlaceRepository()
-                        .findByUserRequestUUIDAndCurrentPageToken(uuid, pageToken);
+                        .findByUserRequestUUID(uuid);
 
-        if(places.size() == 0){
-            LoadPlacesTask loadPlacesTask =
-                    new LoadPlacesTask(
-                            uuid,
-                            pageToken,
-                            searchTaskOptions,
-                            false
-                    );
-            syncTaskExecutor.execute(loadPlacesTask);
-
-            LoadPlacesTask loadPlacesTaskFull =
-                    new LoadPlacesTask(
-                            uuid,
-                            pageToken,
-                            searchTaskOptions,
-                            true
-                    );
-
-            threadPoolTaskExecutor.execute(loadPlacesTaskFull);
+        if (places.size() == 0) {
+            loadPlaces(uuid);
 
             places = searchTaskOptions.getPlaceRepository()
-                    .findByUserRequestUUIDAndCurrentPageToken(uuid, pageToken);
+                    .findByUserRequestUUID(uuid);
         }
 
-        return places;
+        PlaceSearchResponse response;
+        if (places.size() == 0) {
+            response = new PlaceSearchResponse(
+                    ResponseType.ERROR,
+                    "Интересные места не найдены",
+                    places
+            );
+        } else {
+            response = new PlaceSearchResponse(
+                    ResponseType.SUCCESS,
+                    "",
+                    places
+            );
+        }
+
+        return response;
+    }
+
+    @RequestMapping(value = SEARCH_PLACES_PHOTO_PATH, method = RequestMethod.GET)
+    public byte[] getPlacePhoto(@PathVariable("uuid") UUID uuid) {
+        return getImageBytes(
+                searchTaskOptions.getPlaceRepository()
+                        .getOne(uuid)
+                        .getImagePath()
+        );
+    }
+
+    private byte[] getImageBytes(String imagePath) {
+        byte[] result = null;
+        try(InputStream inputStream = new FileInputStream(imagePath);
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            outputStream.write(inputStream.readAllBytes());
+            result = outputStream.toByteArray();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    private void loadPlaces(UUID uuid) {
+        LoadPlacesTask loadPlacesTask =
+                new LoadPlacesTask(
+                        uuid,
+                        "",
+                        searchTaskOptions
+                );
+        syncTaskExecutor.execute(loadPlacesTask);
     }
 }
