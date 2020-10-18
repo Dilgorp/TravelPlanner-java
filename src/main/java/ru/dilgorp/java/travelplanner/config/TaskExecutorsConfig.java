@@ -6,8 +6,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import ru.dilgorp.java.travelplanner.repository.PlaceRepository;
-import ru.dilgorp.java.travelplanner.repository.UserRequestRepository;
+import ru.dilgorp.java.travelplanner.api.google.place.GooglePlaceApiService;
+import ru.dilgorp.java.travelplanner.api.google.place.GooglePlaceApiServiceImpl;
+import ru.dilgorp.java.travelplanner.repository.google.api.PlaceRepository;
+import ru.dilgorp.java.travelplanner.repository.google.api.UserRequestRepository;
 import ru.dilgorp.java.travelplanner.task.search.options.SearchTaskOptions;
 import ru.dilgorp.java.travelplanner.task.search.options.impl.SearchTaskOptionsImpl;
 
@@ -38,6 +40,12 @@ public class TaskExecutorsConfig {
     }
 
     @Bean
+    public GooglePlaceApiService googlePlaceApiService(){
+        GeoApiContext context = new GeoApiContext.Builder().apiKey(googlePlaceApiKey).build();
+        return new GooglePlaceApiServiceImpl(context);
+    }
+
+    @Bean
     public SearchTaskOptions searchTaskOptions() {
         return new SearchTaskOptionsImpl.Builder()
                 .setApiKey(googlePlaceApiKey)
@@ -47,7 +55,7 @@ public class TaskExecutorsConfig {
                 .setPlacesCount(placesMaxCount)
                 .setUserRequestRepository(userRequestRepository)
                 .setPlaceRepository(placeRepository)
-                .setContext(new GeoApiContext.Builder().apiKey(googlePlaceApiKey).build())
+                .setPlaceApiService(googlePlaceApiService())
                 .build();
     }
 

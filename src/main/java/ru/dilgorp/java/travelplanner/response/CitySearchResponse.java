@@ -1,6 +1,6 @@
 package ru.dilgorp.java.travelplanner.response;
 
-import ru.dilgorp.java.travelplanner.domain.UserRequest;
+import ru.dilgorp.java.travelplanner.domain.google.api.UserRequest;
 
 public class CitySearchResponse extends Response{
     private final UserRequest userRequest;

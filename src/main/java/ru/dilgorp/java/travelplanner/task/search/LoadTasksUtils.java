@@ -21,7 +21,7 @@ public class LoadTasksUtils {
         String directory = photosFolder
                 + requestUUID.toString();
         String filePath = directory + "\\"
-                + fileName
+                + fileName + "."
                 + imageResult.contentType.split("/")[1];
 
         Path directoryPath = Paths.get(directory);

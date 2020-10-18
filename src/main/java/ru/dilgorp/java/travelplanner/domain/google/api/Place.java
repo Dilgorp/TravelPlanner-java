@@ -1,12 +1,12 @@
-package ru.dilgorp.java.travelplanner.domain;
+package ru.dilgorp.java.travelplanner.domain.google.api;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import javax.persistence.*;
 import java.util.UUID;
 
 @Entity(name = "place")
+@JsonIgnoreProperties({"imagePath", "placeId"})
 public class Place {
 
     @Id
@@ -17,7 +17,9 @@ public class Place {
     private String description;
     private String placeId;
     private String imagePath;
+    @Column(name = "current_page_token", length = 1024)
     private String currentPageToken;
+    @Column(name = "next_page_token", length = 1024)
     private String nextPageToken;
 
     private UUID userRequestUUID;

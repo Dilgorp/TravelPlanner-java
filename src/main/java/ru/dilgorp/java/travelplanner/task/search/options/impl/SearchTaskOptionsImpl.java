@@ -1,8 +1,8 @@
 package ru.dilgorp.java.travelplanner.task.search.options.impl;
 
-import com.google.maps.GeoApiContext;
-import ru.dilgorp.java.travelplanner.repository.PlaceRepository;
-import ru.dilgorp.java.travelplanner.repository.UserRequestRepository;
+import ru.dilgorp.java.travelplanner.api.google.place.GooglePlaceApiService;
+import ru.dilgorp.java.travelplanner.repository.google.api.PlaceRepository;
+import ru.dilgorp.java.travelplanner.repository.google.api.UserRequestRepository;
 import ru.dilgorp.java.travelplanner.task.search.options.SearchTaskOptions;
 
 import java.util.Objects;
@@ -17,7 +17,7 @@ public class SearchTaskOptionsImpl implements SearchTaskOptions {
 
     private final UserRequestRepository userRequestRepository;
     private final PlaceRepository placeRepository;
-    private final GeoApiContext context;
+    private final GooglePlaceApiService placeApiService;
 
     public SearchTaskOptionsImpl(
             String apiKey,
@@ -27,7 +27,7 @@ public class SearchTaskOptionsImpl implements SearchTaskOptions {
             int placesCount,
             UserRequestRepository userRequestRepository,
             PlaceRepository placeRepository,
-            GeoApiContext context
+            GooglePlaceApiService placeApiService
     ) {
         this.apiKey = apiKey;
         this.language = language;
@@ -36,7 +36,7 @@ public class SearchTaskOptionsImpl implements SearchTaskOptions {
         this.placesCount = placesCount;
         this.userRequestRepository = userRequestRepository;
         this.placeRepository = placeRepository;
-        this.context = context;
+        this.placeApiService = placeApiService;
     }
 
     @Override
@@ -70,8 +70,8 @@ public class SearchTaskOptionsImpl implements SearchTaskOptions {
     }
 
     @Override
-    public GeoApiContext getContext() {
-        return context;
+    public GooglePlaceApiService getPlaceApiService() {
+        return placeApiService;
     }
 
     @Override
@@ -88,7 +88,7 @@ public class SearchTaskOptionsImpl implements SearchTaskOptions {
         private int placesCount;
         private UserRequestRepository userRequestRepository;
         private PlaceRepository placeRepository;
-        private GeoApiContext context;
+        private GooglePlaceApiService placeApiService;
 
         @Override
         public SearchTaskOptions.Builder setApiKey(String apiKey) {
@@ -133,8 +133,8 @@ public class SearchTaskOptionsImpl implements SearchTaskOptions {
         }
 
         @Override
-        public SearchTaskOptions.Builder setContext(GeoApiContext context) {
-            this.context = context;
+        public SearchTaskOptions.Builder setPlaceApiService(GooglePlaceApiService placeApiService) {
+            this.placeApiService = placeApiService;
             return this;
         }
 
@@ -148,7 +148,7 @@ public class SearchTaskOptionsImpl implements SearchTaskOptions {
                     placesCount,
                     Objects.requireNonNull(userRequestRepository),
                     Objects.requireNonNull(placeRepository),
-                    Objects.requireNonNull(context)
+                    Objects.requireNonNull(placeApiService)
             );
         }
     }

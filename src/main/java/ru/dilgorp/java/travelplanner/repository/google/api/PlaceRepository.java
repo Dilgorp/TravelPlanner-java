@@ -1,8 +1,8 @@
-package ru.dilgorp.java.travelplanner.repository;
+package ru.dilgorp.java.travelplanner.repository.google.api;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import ru.dilgorp.java.travelplanner.domain.Place;
+import ru.dilgorp.java.travelplanner.domain.google.api.Place;
 
 import java.util.List;
 import java.util.UUID;

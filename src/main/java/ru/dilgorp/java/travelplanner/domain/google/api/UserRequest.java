@@ -1,4 +1,4 @@
-package ru.dilgorp.java.travelplanner.domain;
+package ru.dilgorp.java.travelplanner.domain.google.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

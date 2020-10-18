@@ -3,8 +3,9 @@ package ru.dilgorp.java.travelplanner.controller;
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.bind.annotation.*;
-import ru.dilgorp.java.travelplanner.domain.UserRequest;
-import ru.dilgorp.java.travelplanner.repository.UserRequestRepository;
+import ru.dilgorp.java.travelplanner.domain.google.api.Place;
+import ru.dilgorp.java.travelplanner.domain.google.api.UserRequest;
+import ru.dilgorp.java.travelplanner.repository.google.api.UserRequestRepository;
 import ru.dilgorp.java.travelplanner.response.CitySearchResponse;
 import ru.dilgorp.java.travelplanner.response.ResponseType;
 import ru.dilgorp.java.travelplanner.task.search.LoadCityInfoTask;
@@ -16,6 +17,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @SuppressWarnings("unused")
@@ -88,17 +90,34 @@ public class SearchController {
     }
 
     @RequestMapping(value = SEARCH_CITY_PLACES_BY_UUID_PATH, method = RequestMethod.GET)
-    public String getCityPlaces(@PathVariable("uuid") UUID uuid, @RequestParam(defaultValue = "") String pageToken) throws Exception {
+    public List<Place> getCityPlaces(@PathVariable("uuid") UUID uuid, @RequestParam(defaultValue = "") String pageToken) {
 
+        List<Place> places =
+                searchTaskOptions.getPlaceRepository()
+                        .findByUserRequestUUIDAndCurrentPageToken(uuid, pageToken);
+
+        if(places.size() == 0){
+            LoadPlacesTask loadPlacesTask =
+                    new LoadPlacesTask(
+                            uuid,
+                            pageToken,
+                            searchTaskOptions,
+                            false
+                    );
+            syncTaskExecutor.execute(loadPlacesTask);
+        }
 
         LoadPlacesTask loadPlacesTask =
                 new LoadPlacesTask(
                         uuid,
                         pageToken,
-                        searchTaskOptions
+                        searchTaskOptions,
+                        true
                 );
 
+        threadPoolTaskExecutor.execute(loadPlacesTask);
 
-        return "Done";
+        return searchTaskOptions.getPlaceRepository()
+                .findByUserRequestUUIDAndCurrentPageToken(uuid, pageToken);
     }
 }

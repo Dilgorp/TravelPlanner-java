@@ -1,8 +1,8 @@
 package ru.dilgorp.java.travelplanner.task.search.options;
 
-import com.google.maps.GeoApiContext;
-import ru.dilgorp.java.travelplanner.repository.PlaceRepository;
-import ru.dilgorp.java.travelplanner.repository.UserRequestRepository;
+import ru.dilgorp.java.travelplanner.api.google.place.GooglePlaceApiService;
+import ru.dilgorp.java.travelplanner.repository.google.api.PlaceRepository;
+import ru.dilgorp.java.travelplanner.repository.google.api.UserRequestRepository;
 
 public interface SearchTaskOptions {
     String getApiKey();
@@ -14,7 +14,7 @@ public interface SearchTaskOptions {
     UserRequestRepository getUserRequestRepository();
     PlaceRepository getPlaceRepository();
 
-    GeoApiContext getContext();
+    GooglePlaceApiService getPlaceApiService();
 
     interface Builder{
         Builder setApiKey(String apiKey);
@@ -26,7 +26,7 @@ public interface SearchTaskOptions {
         Builder setUserRequestRepository(UserRequestRepository userRequestRepository);
         Builder setPlaceRepository(PlaceRepository placeRepository);
 
-        Builder setContext(GeoApiContext context);
+        Builder setPlaceApiService(GooglePlaceApiService placeApiService);
 
         SearchTaskOptions build();
     }

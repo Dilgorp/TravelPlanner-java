@@ -1,12 +1,9 @@
 package ru.dilgorp.java.travelplanner.task.search;
 
-import com.google.maps.FindPlaceFromTextRequest;
 import com.google.maps.ImageResult;
-import com.google.maps.PlacesApi;
-import com.google.maps.model.FindPlaceFromText;
 import com.google.maps.model.PlaceDetails;
-import ru.dilgorp.java.travelplanner.domain.UserRequest;
-import ru.dilgorp.java.travelplanner.repository.UserRequestRepository;
+import ru.dilgorp.java.travelplanner.domain.google.api.UserRequest;
+import ru.dilgorp.java.travelplanner.repository.google.api.UserRequestRepository;
 import ru.dilgorp.java.travelplanner.task.search.options.SearchTaskOptions;
 
 import java.util.Date;
@@ -33,21 +30,12 @@ public class LoadCityInfoTask implements Runnable {
 
     private void loadCityInfo() {
         try {
-            FindPlaceFromText response =
-                    PlacesApi.findPlaceFromText(
-                            searchTaskOptions.getContext(),
+            PlaceDetails placeDetails = searchTaskOptions
+                    .getPlaceApiService()
+                    .getCityDetails(
                             cityName,
-                            FindPlaceFromTextRequest.InputType.TEXT_QUERY
-                    ).await();
-
-            if (response.candidates.length < 1) {
-                return;
-            }
-
-            PlaceDetails placeDetails =
-                    PlacesApi.placeDetails(searchTaskOptions.getContext(), response.candidates[0].placeId)
-                            .language(searchTaskOptions.getLanguage())
-                            .await();
+                            searchTaskOptions.getLanguage()
+                    );
 
 
             UserRequest request = userRequestFromDB == null ? new UserRequest() : userRequestFromDB;
@@ -68,9 +56,10 @@ public class LoadCityInfoTask implements Runnable {
         UserRequest request = userRequestRepository.findByText(text);
 
         ImageResult imageResult =
-                PlacesApi.photo(searchTaskOptions.getContext(), placeDetails.photos[0].photoReference)
-                        .maxWidth(placeDetails.photos[0].width).
-                        await();
+                searchTaskOptions.getPlaceApiService().getImageDetails(
+                        placeDetails.photos[0].photoReference,
+                        placeDetails.photos[0].width
+                );
 
         String filePath = LoadTasksUtils.createImagePath(
                 request.getUuid(),
