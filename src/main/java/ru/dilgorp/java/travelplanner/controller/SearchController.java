@@ -105,19 +105,21 @@ public class SearchController {
                             false
                     );
             syncTaskExecutor.execute(loadPlacesTask);
+
+            LoadPlacesTask loadPlacesTaskFull =
+                    new LoadPlacesTask(
+                            uuid,
+                            pageToken,
+                            searchTaskOptions,
+                            true
+                    );
+
+            threadPoolTaskExecutor.execute(loadPlacesTaskFull);
+
+            places = searchTaskOptions.getPlaceRepository()
+                    .findByUserRequestUUIDAndCurrentPageToken(uuid, pageToken);
         }
 
-        LoadPlacesTask loadPlacesTask =
-                new LoadPlacesTask(
-                        uuid,
-                        pageToken,
-                        searchTaskOptions,
-                        true
-                );
-
-        threadPoolTaskExecutor.execute(loadPlacesTask);
-
-        return searchTaskOptions.getPlaceRepository()
-                .findByUserRequestUUIDAndCurrentPageToken(uuid, pageToken);
+        return places;
     }
 }

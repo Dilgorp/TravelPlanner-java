@@ -72,10 +72,6 @@ public class LoadPlacesTask implements Runnable {
             PlacesSearchResponse places = apiService.getPlaces(query, searchTaskOptions.getLanguage(), pageToken);
             nextPageToken = places.nextPageToken;
 
-            if (currentTokenLoaded()) {
-                return;
-            }
-
             List<Place> placeList = new ArrayList<>();
             for (PlacesSearchResult result : places.results) {
                 if (result.photos == null || result.photos.length == 0) {
@@ -93,11 +89,6 @@ public class LoadPlacesTask implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private boolean currentTokenLoaded() {
-        return searchTaskOptions.getPlaceRepository()
-                .findByUserRequestUUIDAndCurrentPageToken(requestUUID, pageToken).size() > 0;
     }
 
     private void loadImages() throws InterruptedException, ApiException, IOException {
