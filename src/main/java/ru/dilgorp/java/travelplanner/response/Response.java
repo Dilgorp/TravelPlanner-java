@@ -1,12 +1,14 @@
 package ru.dilgorp.java.travelplanner.response;
 
-abstract public class Response {
-    protected final ResponseType type;
-    protected final String message;
+public class Response<T> {
+    private final ResponseType type;
+    private final String message;
+    private final T data;
 
-    public Response(ResponseType type, String message) {
+    public Response(ResponseType type, String message, T data) {
         this.type = type;
         this.message = message == null ? "" : message;
+        this.data = data;
     }
 
     public ResponseType getType() {
@@ -15,5 +17,9 @@ abstract public class Response {
 
     public String getMessage() {
         return message;
+    }
+
+    public T getData() {
+        return data;
     }
 }

@@ -50,7 +50,7 @@ public class LoadPlacesTask implements Runnable {
     private void loadPlaces() {
         PlaceRepository placeRepository = searchTaskOptions.getPlaceRepository();
         UserRequestRepository userRequestRepository = searchTaskOptions.getUserRequestRepository();
-        int placesDBCount = placeRepository.findCountByUserRequestUUID(requestUUID);
+        int placesDBCount = placeRepository.findCountByUserRequestUuid(requestUUID);
         if (placesDBCount >= searchTaskOptions.getPlacesCount()) {
             return;
         }
@@ -93,7 +93,7 @@ public class LoadPlacesTask implements Runnable {
         GooglePlaceApiService apiService = searchTaskOptions.getPlaceApiService();
         List<Place> places =
                 searchTaskOptions.getPlaceRepository()
-                        .findByUserRequestUUIDAndCurrentPageToken(requestUUID, pageToken);
+                        .findByUserRequestUuidAndCurrentPageToken(requestUUID, pageToken);
 
         for (Place place : places) {
             ImageResult imageResult =
@@ -126,6 +126,6 @@ public class LoadPlacesTask implements Runnable {
         place.setName(result.name);
         place.setNextPageToken(nextPageToken);
         place.setPlaceId(result.placeId);
-        place.setUserRequestUUID(requestUUID);
+        place.setUserRequestUuid(requestUUID);
     }
 }

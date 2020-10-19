@@ -9,8 +9,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import ru.dilgorp.java.travelplanner.service.DetailService;
 
 import static ru.dilgorp.java.travelplanner.controller.AuthenticationController.REGISTRATION_PATH;
-import static ru.dilgorp.java.travelplanner.controller.SearchController.SEARCH_CITY_PHOTOS_PATH;
-import static ru.dilgorp.java.travelplanner.controller.SearchController.SEARCH_PLACES_PHOTOS_PATH;
 
 
 @Configuration
@@ -30,7 +28,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .httpBasic().and()
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers(REGISTRATION_PATH, SEARCH_CITY_PHOTOS_PATH + "**", SEARCH_PLACES_PHOTOS_PATH + "**").permitAll()
+                .antMatchers(REGISTRATION_PATH).permitAll()
                 .anyRequest().authenticated();
     }
 

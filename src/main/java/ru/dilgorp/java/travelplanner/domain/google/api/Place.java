@@ -6,7 +6,13 @@ import javax.persistence.*;
 import java.util.UUID;
 
 @Entity(name = "place")
-@JsonIgnoreProperties({"imagePath", "placeId"})
+@JsonIgnoreProperties({
+        "imagePath",
+        "placeId",
+        "currentPageToken",
+        "nextPageToken",
+        "userRequestUuid"
+})
 public class Place {
 
     @Id
@@ -22,19 +28,19 @@ public class Place {
     @Column(name = "next_page_token", length = 1024)
     private String nextPageToken;
 
-    private UUID userRequestUUID;
+    private UUID userRequestUuid;
 
     public Place() {
     }
 
-    public Place(String name, String description, String placeId, String imagePath, String currentPageToken, String nextPageToken, UUID userRequestUUID) {
+    public Place(String name, String description, String placeId, String imagePath, String currentPageToken, String nextPageToken, UUID userRequestUuid) {
         this.name = name;
         this.description = description;
         this.placeId = placeId;
         this.imagePath = imagePath;
         this.currentPageToken = currentPageToken;
         this.nextPageToken = nextPageToken;
-        this.userRequestUUID = userRequestUUID;
+        this.userRequestUuid = userRequestUuid;
     }
 
     public UUID getUuid() {
@@ -93,11 +99,11 @@ public class Place {
         this.nextPageToken = nextPageToken;
     }
 
-    public UUID getUserRequestUUID() {
-        return userRequestUUID;
+    public UUID getUserRequestUuid() {
+        return userRequestUuid;
     }
 
-    public void setUserRequestUUID(UUID userRequestUUID) {
-        this.userRequestUUID = userRequestUUID;
+    public void setUserRequestUuid(UUID userRequestUuid) {
+        this.userRequestUuid = userRequestUuid;
     }
 }

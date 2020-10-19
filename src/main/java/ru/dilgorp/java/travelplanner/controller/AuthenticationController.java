@@ -1,13 +1,11 @@
 package ru.dilgorp.java.travelplanner.controller;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.dilgorp.java.travelplanner.domain.Role;
 import ru.dilgorp.java.travelplanner.domain.User;
 import ru.dilgorp.java.travelplanner.repository.UserRepository;
-import ru.dilgorp.java.travelplanner.response.AuthenticationResponse;
+import ru.dilgorp.java.travelplanner.response.Response;
 import ru.dilgorp.java.travelplanner.response.ResponseType;
 
 import java.util.Collections;
@@ -27,22 +25,22 @@ public class AuthenticationController {
         this.encoder = encoder;
     }
 
-    @PostMapping(REGISTRATION_PATH)
-    public AuthenticationResponse postRegistration(User user){
+    @RequestMapping(value = REGISTRATION_PATH, method = RequestMethod.POST)
+    public Response<User> postRegistration(@RequestBody User user) {
         User userFromDb = userRepository.findByUsername(user.getUsername());
-        if(userFromDb != null){
-            return new AuthenticationResponse(ResponseType.ERROR, "Пользователь уже существует");
+        if (userFromDb != null) {
+            return new Response<>(ResponseType.ERROR, "Пользователь уже существует", null);
         }
 
         User userForSaving = new User(user.getUsername(), encoder.encode(user.getPassword()));
         userForSaving.setRoles(Collections.singleton(Role.USER));
         userRepository.save(userForSaving);
 
-        return new AuthenticationResponse(ResponseType.SUCCESS, null);
+        return new Response<>(ResponseType.SUCCESS, null, null);
     }
 
     @GetMapping(LOGIN_PATH)
-    public AuthenticationResponse getLogin(){
-        return new AuthenticationResponse(ResponseType.SUCCESS, null);
+    public Response<User> getLogin() {
+        return new Response<>(ResponseType.SUCCESS, null, null);
     }
 }

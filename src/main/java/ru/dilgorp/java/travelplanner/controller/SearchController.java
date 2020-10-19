@@ -9,9 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.dilgorp.java.travelplanner.domain.google.api.Place;
 import ru.dilgorp.java.travelplanner.domain.google.api.UserRequest;
 import ru.dilgorp.java.travelplanner.repository.google.api.UserRequestRepository;
+import ru.dilgorp.java.travelplanner.response.Response;
 import ru.dilgorp.java.travelplanner.response.ResponseType;
-import ru.dilgorp.java.travelplanner.response.search.CitySearchResponse;
-import ru.dilgorp.java.travelplanner.response.search.PlaceSearchResponse;
 import ru.dilgorp.java.travelplanner.task.search.LoadCityInfoTask;
 import ru.dilgorp.java.travelplanner.task.search.LoadPlacesTask;
 import ru.dilgorp.java.travelplanner.task.search.options.SearchTaskOptions;
@@ -48,7 +47,7 @@ public class SearchController {
     }
 
     @RequestMapping(value = SEARCH_CITY_PATH, method = RequestMethod.GET)
-    public CitySearchResponse getCityInfo(@PathVariable("cityname") String cityName) {
+    public Response<UserRequest> getCityInfo(@PathVariable("cityname") String cityName) {
         String textSearch = cityName.toLowerCase();
         UserRequestRepository userRequestRepository = searchTaskOptions.getUserRequestRepository();
 
@@ -65,14 +64,14 @@ public class SearchController {
             userRequestFromDB = userRequestRepository.findByText(textSearch);
         }
 
-        CitySearchResponse response;
+        Response<UserRequest> response;
         if (userRequestFromDB == null) {
-            response = new CitySearchResponse(ResponseType.ERROR, "Город не найден", null);
+            response = new Response<>(ResponseType.ERROR, "Город не найден", null);
         } else {
             if (userRequestFromDB.getExpired().compareTo(new Date()) <= 0) {
                 threadPoolTaskExecutor.execute(task);
             }
-            response = new CitySearchResponse(ResponseType.SUCCESS, "", userRequestFromDB);
+            response = new Response<>(ResponseType.SUCCESS, "", userRequestFromDB);
         }
 
         return response;
@@ -88,28 +87,28 @@ public class SearchController {
     }
 
     @RequestMapping(value = SEARCH_CITY_PLACES_PATH, method = RequestMethod.GET)
-    public PlaceSearchResponse getCityPlaces(@PathVariable("uuid") UUID uuid) {
+    public Response<List<Place>> getCityPlaces(@PathVariable("uuid") UUID uuid) {
 
         List<Place> places =
                 searchTaskOptions.getPlaceRepository()
-                        .findByUserRequestUUID(uuid);
+                        .findByUserRequestUuid(uuid);
 
         if (places.size() == 0) {
             loadPlaces(uuid);
 
             places = searchTaskOptions.getPlaceRepository()
-                    .findByUserRequestUUID(uuid);
+                    .findByUserRequestUuid(uuid);
         }
 
-        PlaceSearchResponse response;
+        Response<List<Place>> response;
         if (places.size() == 0) {
-            response = new PlaceSearchResponse(
+            response = new Response<>(
                     ResponseType.ERROR,
                     "Интересные места не найдены",
                     places
             );
         } else {
-            response = new PlaceSearchResponse(
+            response = new Response<>(
                     ResponseType.SUCCESS,
                     "",
                     places

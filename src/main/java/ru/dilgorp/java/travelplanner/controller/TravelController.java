@@ -1,12 +1,15 @@
 package ru.dilgorp.java.travelplanner.controller;
 
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import ru.dilgorp.java.travelplanner.domain.Travel;
 import ru.dilgorp.java.travelplanner.repository.TravelRepository;
-import ru.dilgorp.java.travelplanner.response.AllTravelResponse;
+import ru.dilgorp.java.travelplanner.response.Response;
 import ru.dilgorp.java.travelplanner.response.ResponseType;
-import ru.dilgorp.java.travelplanner.response.TravelResponse;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,12 +28,12 @@ public class TravelController {
         this.travelRepository = travelRepository;
     }
 
-    @RequestMapping(value = ADD_TRAVEL_PATH, method = RequestMethod.GET)
-    public TravelResponse addTravel() {
+    @RequestMapping(value = ADD_TRAVEL_PATH, method = RequestMethod.POST)
+    public Response<Travel> addTravel() {
         Travel travel = new Travel("", 0, 0, "");
         travelRepository.save(travel);
 
-        return new TravelResponse(
+        return new Response<>(
                 ResponseType.SUCCESS,
                 "",
                 travel
@@ -38,41 +41,41 @@ public class TravelController {
     }
 
     @RequestMapping(value = GET_TRAVEL_PATH, method = RequestMethod.GET)
-    public TravelResponse getTravel(@PathVariable("uuid") UUID uuid) {
+    public Response<Travel> getTravel(@PathVariable("uuid") UUID uuid) {
         Optional<Travel> byId = travelRepository.findById(uuid);
-        TravelResponse response;
-        response = byId.map(travel -> new TravelResponse(ResponseType.SUCCESS, "", travel))
-                .orElseGet(() -> new TravelResponse(ResponseType.ERROR, "Путешествие не найдено", null));
+        Response<Travel> response;
+        response = byId.map(travel -> new Response<>(ResponseType.SUCCESS, "", travel))
+                .orElseGet(() -> new Response<>(ResponseType.ERROR, "Путешествие не найдено", null));
         return response;
     }
 
-    @RequestMapping(value = DELETE_TRAVEL_PATH, method = RequestMethod.GET)
-    public TravelResponse deleteTravel(@PathVariable("uuid") UUID uuid) {
+    @RequestMapping(value = DELETE_TRAVEL_PATH, method = RequestMethod.DELETE)
+    public Response<Travel> deleteTravel(@PathVariable("uuid") UUID uuid) {
         Travel travel = travelRepository.getOne(uuid);
         travelRepository.delete(travel);
-        return new TravelResponse(ResponseType.SUCCESS, "", null);
+        return new Response<>(ResponseType.SUCCESS, "", null);
     }
 
-    @RequestMapping(value = REFRESH_TRAVEL_PATH, method = RequestMethod.GET)
-    public TravelResponse refreshTravel(@PathVariable("uuid") UUID uuid) {
+    @RequestMapping(value = REFRESH_TRAVEL_PATH, method = RequestMethod.POST)
+    public Response<Travel> refreshTravel(@PathVariable("uuid") UUID uuid) {
         Optional<Travel> byId = travelRepository.findById(uuid);
-        TravelResponse response;
-        response = byId.map(travel -> new TravelResponse(ResponseType.SUCCESS, "", travel))
-                .orElseGet(() -> new TravelResponse(ResponseType.ERROR, "Путешествие не найдено", null));
+        Response<Travel> response;
+        response = byId.map(travel -> new Response<>(ResponseType.SUCCESS, "", travel))
+                .orElseGet(() -> new Response<>(ResponseType.ERROR, "Путешествие не найдено", null));
         return response;
     }
 
     @RequestMapping(value = ALL_TRAVEL_PATH, method = RequestMethod.GET)
-    public AllTravelResponse allTravels() {
-        return new AllTravelResponse(ResponseType.SUCCESS, "", travelRepository.findAll());
+    public Response<List<Travel>> allTravels() {
+        return new Response<>(ResponseType.SUCCESS, "", travelRepository.findAll());
     }
 
     @RequestMapping(value = GET_TRAVEL_IMAGE_PATH, method = RequestMethod.GET)
-    public byte[] getTravelImage(@PathVariable("uuid") UUID uuid){
+    public byte[] getTravelImage(@PathVariable("uuid") UUID uuid) {
         byte[] result = null;
         Optional<Travel> byId = travelRepository.findById(uuid);
 
-        if(byId.isPresent()){
+        if (byId.isPresent()) {
             result = ControllerUtils.getImageBytes(byId.get().getImagePath());
         }
 
