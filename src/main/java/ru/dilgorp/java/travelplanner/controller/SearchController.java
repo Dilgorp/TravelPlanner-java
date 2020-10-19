@@ -2,18 +2,20 @@ package ru.dilgorp.java.travelplanner.controller;
 
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import ru.dilgorp.java.travelplanner.domain.google.api.Place;
 import ru.dilgorp.java.travelplanner.domain.google.api.UserRequest;
 import ru.dilgorp.java.travelplanner.repository.google.api.UserRequestRepository;
-import ru.dilgorp.java.travelplanner.response.CitySearchResponse;
-import ru.dilgorp.java.travelplanner.response.PlaceSearchResponse;
 import ru.dilgorp.java.travelplanner.response.ResponseType;
+import ru.dilgorp.java.travelplanner.response.search.CitySearchResponse;
+import ru.dilgorp.java.travelplanner.response.search.PlaceSearchResponse;
 import ru.dilgorp.java.travelplanner.task.search.LoadCityInfoTask;
 import ru.dilgorp.java.travelplanner.task.search.LoadPlacesTask;
 import ru.dilgorp.java.travelplanner.task.search.options.SearchTaskOptions;
 
-import java.io.*;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -78,7 +80,7 @@ public class SearchController {
 
     @RequestMapping(value = SEARCH_CITY_PHOTO_PATH, method = RequestMethod.GET)
     public byte[] getCityPhoto(@PathVariable("uuid") UUID uuid) {
-        return getImageBytes(
+        return ControllerUtils.getImageBytes(
                 searchTaskOptions.getUserRequestRepository()
                         .getOne(uuid)
                         .getImagePath()
@@ -119,24 +121,11 @@ public class SearchController {
 
     @RequestMapping(value = SEARCH_PLACES_PHOTO_PATH, method = RequestMethod.GET)
     public byte[] getPlacePhoto(@PathVariable("uuid") UUID uuid) {
-        return getImageBytes(
+        return ControllerUtils.getImageBytes(
                 searchTaskOptions.getPlaceRepository()
                         .getOne(uuid)
                         .getImagePath()
         );
-    }
-
-    private byte[] getImageBytes(String imagePath) {
-        byte[] result = null;
-        try(InputStream inputStream = new FileInputStream(imagePath);
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            outputStream.write(inputStream.readAllBytes());
-            result = outputStream.toByteArray();
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-        return result;
     }
 
     private void loadPlaces(UUID uuid) {

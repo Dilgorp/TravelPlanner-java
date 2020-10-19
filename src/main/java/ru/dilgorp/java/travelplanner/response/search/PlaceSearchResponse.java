@@ -1,10 +1,12 @@
-package ru.dilgorp.java.travelplanner.response;
+package ru.dilgorp.java.travelplanner.response.search;
 
 import ru.dilgorp.java.travelplanner.domain.google.api.Place;
+import ru.dilgorp.java.travelplanner.response.Response;
+import ru.dilgorp.java.travelplanner.response.ResponseType;
 
 import java.util.List;
 
-public class PlaceSearchResponse extends Response{
+public class PlaceSearchResponse extends Response {
     private final List<Place> places;
 
     public PlaceSearchResponse(ResponseType type, String message, List<Place> places) {
