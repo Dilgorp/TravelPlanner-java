@@ -21,16 +21,18 @@ public class CityPlace {
     private String imagePath;
     private UUID cityUuid;
     private UUID travelUuid;
+    private UUID userUuid;
 
     public CityPlace() {
     }
 
-    public CityPlace(String name, String description, String imagePath, UUID cityUuid, UUID travelUuid) {
+    public CityPlace(String name, String description, String imagePath, UUID cityUuid, UUID travelUuid, UUID userUuid) {
         this.name = name;
         this.description = description;
         this.imagePath = imagePath;
         this.cityUuid = cityUuid;
         this.travelUuid = travelUuid;
+        this.userUuid = userUuid;
     }
 
     public UUID getUuid() {
@@ -79,5 +81,13 @@ public class CityPlace {
 
     public void setTravelUuid(UUID travelUuid) {
         this.travelUuid = travelUuid;
+    }
+
+    public UUID getUserUuid() {
+        return userUuid;
+    }
+
+    public void setUserUuid(UUID userUuid) {
+        this.userUuid = userUuid;
     }
 }

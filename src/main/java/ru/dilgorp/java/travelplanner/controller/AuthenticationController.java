@@ -36,11 +36,12 @@ public class AuthenticationController {
         userForSaving.setRoles(Collections.singleton(Role.USER));
         userRepository.save(userForSaving);
 
-        return new Response<>(ResponseType.SUCCESS, null, null);
+        return new Response<>(ResponseType.SUCCESS, "", userForSaving);
     }
 
     @GetMapping(LOGIN_PATH)
-    public Response<User> getLogin() {
-        return new Response<>(ResponseType.SUCCESS, null, null);
+    public Response<User> getLogin(@RequestBody User user) {
+        User userDB = userRepository.findByUsername(user.getUsername());
+        return new Response<>(ResponseType.SUCCESS, "", userDB);
     }
 }

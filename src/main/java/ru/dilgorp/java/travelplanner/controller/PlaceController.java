@@ -14,9 +14,10 @@ import java.util.UUID;
 @RestController
 public class PlaceController {
 
-    private final String GET_PLACES_PATH = "/travel/{travel_uuid}/city/{city_uuid}/places/all";
-    private final String ADD_PLACES_PATH = "/travel/{travel_uuid}/city/{city_uuid}/places/add";
-    private final String DELETE_PLACE_PATH = "/travel/{travel_uuid}/city/{city_uuid}/places/{place_uuid}/delete";
+    private final String GET_PLACES_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/places/all";
+    private final String ADD_PLACES_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/places/add";
+    private final String DELETE_PLACE_PATH =
+            "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/places/{place_uuid}/delete";
 
     private final CityPlaceRepository cityPlaceRepository;
 
@@ -26,23 +27,25 @@ public class PlaceController {
 
     @RequestMapping(value = GET_PLACES_PATH, method = RequestMethod.GET)
     public Response<List<CityPlace>> getPlaces(
+            @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid,
             @PathVariable("city_uuid") UUID cityUuid
     ) {
         return new Response<>(
                 ResponseType.SUCCESS,
                 "",
-                cityPlaceRepository.findPlacesByTravelUuidAndCityUuid(travelUuid, cityUuid)
+                cityPlaceRepository.findPlacesByTravelUuidAndCityUuidAndUserUuid(travelUuid, cityUuid, userUuid)
         );
     }
 
     @RequestMapping(value = ADD_PLACES_PATH, method = RequestMethod.POST)
     public Response<CityPlace> addPlaces(
+            @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid,
             @PathVariable("city_uuid") UUID cityUuid,
             @RequestBody List<Place> places
     ) {
-        cityPlaceRepository.deleteCityPlaces(travelUuid, cityUuid);
+        cityPlaceRepository.deleteCityPlaces(travelUuid, cityUuid, userUuid);
 
         List<CityPlace> cityPlaces = new ArrayList<>();
         for (Place place : places) {
@@ -52,8 +55,8 @@ public class PlaceController {
                             place.getDescription(),
                             place.getImagePath(),
                             cityUuid,
-                            travelUuid
-                    )
+                            travelUuid,
+                            userUuid)
             );
         }
 
@@ -68,11 +71,12 @@ public class PlaceController {
 
     @RequestMapping(value = DELETE_PLACE_PATH, method = RequestMethod.DELETE)
     public Response<CityPlace> deletePlace(
+            @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid,
             @PathVariable("city_uuid") UUID cityUuid,
             @PathVariable("place_uuid") UUID placeUuid
     ) {
-        cityPlaceRepository.deletePlace(placeUuid, travelUuid, cityUuid);
+        cityPlaceRepository.deletePlace(placeUuid, travelUuid, cityUuid, userUuid);
 
         return new Response<>(
                 ResponseType.SUCCESS,

@@ -10,10 +10,12 @@ import java.util.List;
 import java.util.UUID;
 
 public interface CityRepository extends JpaRepository<City, UUID> {
-    List<City> findByTravelUuid(UUID travelUuid);
+    List<City> findByTravelUuidAndUserUuidOrderByTravelNumber(UUID travelUuid, UUID userUuid);
+
+    City findByUuidAndTravelUuidAndUserUuid(UUID uuid, UUID travelUuid, UUID userUuid);
 
     @Modifying
     @Transactional
-    @Query("DELETE FROM city c WHERE c.travelUuid = ?1")
-    void deleteTravelCities(UUID travelUuid);
+    @Query("DELETE FROM city c WHERE c.travelUuid = ?1 AND c.userUuid = ?2")
+    void deleteTravelCities(UUID travelUuid, UUID userUuid);
 }

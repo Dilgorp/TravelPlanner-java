@@ -6,8 +6,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import ru.dilgorp.java.travelplanner.domain.City;
 import ru.dilgorp.java.travelplanner.domain.google.api.Place;
 import ru.dilgorp.java.travelplanner.domain.google.api.UserRequest;
+import ru.dilgorp.java.travelplanner.repository.CityRepository;
 import ru.dilgorp.java.travelplanner.repository.google.api.UserRequestRepository;
 import ru.dilgorp.java.travelplanner.response.Response;
 import ru.dilgorp.java.travelplanner.response.ResponseType;
@@ -23,12 +25,12 @@ import java.util.UUID;
 @RestController
 public class SearchController {
 
-    private static final String SEARCH_CITY_PATH = "/search/city/{cityname}";
-    public static final String SEARCH_CITY_PHOTOS_PATH = "/search/photo/city/";
-    private static final String SEARCH_CITY_PHOTO_PATH = SEARCH_CITY_PHOTOS_PATH + "{uuid}";
-    private static final String SEARCH_CITY_PLACES_PATH = "/search/places/city/{uuid}";
-    public static final String SEARCH_PLACES_PHOTOS_PATH = "/search/places/photo/";
-    private static final String SEARCH_PLACES_PHOTO_PATH = SEARCH_PLACES_PHOTOS_PATH + "{uuid}";
+    private static final String SEARCH_CITY_PATH =
+            "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/search/{cityname}";
+
+    private static final String SEARCH_CITY_PLACES_PATH = "/search/places/{request_uuid}";
+
+    private static final String SEARCH_PLACES_PHOTO_PATH = "/search/places/photo/{request_uuid}";
 
     public static final String ASYNC_TASK_EXECUTOR_NAME = "ru.dilgorp.java.travelplanner.loadAsyncTaskExecutor";
 
@@ -36,18 +38,27 @@ public class SearchController {
     private final SyncTaskExecutor syncTaskExecutor;
     private final ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
+    private final CityRepository cityRepository;
+
     public SearchController(
             SearchTaskOptions searchTaskOptions,
             SyncTaskExecutor syncTaskExecutor,
-            ThreadPoolTaskExecutor threadPoolTaskExecutor
+            ThreadPoolTaskExecutor threadPoolTaskExecutor,
+            CityRepository cityRepository
     ) {
         this.searchTaskOptions = searchTaskOptions;
         this.syncTaskExecutor = syncTaskExecutor;
         this.threadPoolTaskExecutor = threadPoolTaskExecutor;
+        this.cityRepository = cityRepository;
     }
 
     @RequestMapping(value = SEARCH_CITY_PATH, method = RequestMethod.GET)
-    public Response<UserRequest> getCityInfo(@PathVariable("cityname") String cityName) {
+    public Response<City> getCityInfo(
+            @PathVariable("user_uuid") UUID userUuid,
+            @PathVariable("travel_uuid") UUID travelUuid,
+            @PathVariable("city_uuid") UUID cityUuid,
+            @PathVariable("cityname") String cityName
+    ) {
         String textSearch = cityName.toLowerCase();
         UserRequestRepository userRequestRepository = searchTaskOptions.getUserRequestRepository();
 
@@ -64,40 +75,40 @@ public class SearchController {
             userRequestFromDB = userRequestRepository.findByText(textSearch);
         }
 
-        Response<UserRequest> response;
+        Response<City> response;
         if (userRequestFromDB == null) {
             response = new Response<>(ResponseType.ERROR, "Город не найден", null);
-        } else {
-            if (userRequestFromDB.getExpired().compareTo(new Date()) <= 0) {
-                threadPoolTaskExecutor.execute(task);
-            }
-            response = new Response<>(ResponseType.SUCCESS, "", userRequestFromDB);
+            return response;
+        }
+
+        City city = cityRepository.findByUuidAndTravelUuidAndUserUuid(cityUuid, travelUuid, userUuid);
+        fillCity(userRequestFromDB, city);
+        cityRepository.save(city);
+
+        response = new Response<>(ResponseType.SUCCESS, "", city);
+
+        if (userRequestFromDB.getExpired().compareTo(new Date()) <= 0) {
+            threadPoolTaskExecutor.execute(task);
         }
 
         return response;
     }
 
-    @RequestMapping(value = SEARCH_CITY_PHOTO_PATH, method = RequestMethod.GET)
-    public byte[] getCityPhoto(@PathVariable("uuid") UUID uuid) {
-        return ControllerUtils.getImageBytes(
-                searchTaskOptions.getUserRequestRepository()
-                        .getOne(uuid)
-                        .getImagePath()
-        );
-    }
 
     @RequestMapping(value = SEARCH_CITY_PLACES_PATH, method = RequestMethod.GET)
-    public Response<List<Place>> getCityPlaces(@PathVariable("uuid") UUID uuid) {
+    public Response<List<Place>> getCityPlaces(
+            @PathVariable("request_uuid") UUID requestUuid
+    ) {
 
         List<Place> places =
                 searchTaskOptions.getPlaceRepository()
-                        .findByUserRequestUuid(uuid);
+                        .findByUserRequestUuid(requestUuid);
 
         if (places.size() == 0) {
-            loadPlaces(uuid);
+            loadPlaces(requestUuid);
 
             places = searchTaskOptions.getPlaceRepository()
-                    .findByUserRequestUuid(uuid);
+                    .findByUserRequestUuid(requestUuid);
         }
 
         Response<List<Place>> response;
@@ -119,12 +130,19 @@ public class SearchController {
     }
 
     @RequestMapping(value = SEARCH_PLACES_PHOTO_PATH, method = RequestMethod.GET)
-    public byte[] getPlacePhoto(@PathVariable("uuid") UUID uuid) {
+    public byte[] getPlacePhoto(@PathVariable("request_uuid") UUID requestUuid) {
         return ControllerUtils.getImageBytes(
                 searchTaskOptions.getPlaceRepository()
-                        .getOne(uuid)
+                        .getOne(requestUuid)
                         .getImagePath()
         );
+    }
+
+    private void fillCity(UserRequest userRequestFromDB, City city) {
+        city.setName(userRequestFromDB.getName());
+        city.setDescription(userRequestFromDB.getFormattedAddress());
+        city.setImagePath(userRequestFromDB.getImagePath());
+        city.setUserRequestUuid(userRequestFromDB.getUuid());
     }
 
     private void loadPlaces(UUID uuid) {
