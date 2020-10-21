@@ -119,6 +119,7 @@ public class TravelController {
     public Response<List<Travel>> allTravels(
             @PathVariable("user_uuid") UUID userUuid
     ) {
+        deletionManager.clearEmptyTravels(userUuid);
         return new Response<>(
                 ResponseType.SUCCESS,
                 "",
@@ -131,10 +132,10 @@ public class TravelController {
             @PathVariable("travel_uuid") UUID travelUuid,
             @PathVariable("user_uuid") UUID userUuid
     ) {
-        return ControllerUtils.getImageBytes(
-                travelRepository.findByUuidAndUserUuid(
-                        travelUuid, userUuid
-                ).getImagePath()
-        );
+        Travel travel = travelRepository.findByUuidAndUserUuid(travelUuid, userUuid);
+        if(travel == null){
+            return null;
+        }
+        return ControllerUtils.getImageBytes(travel.getImagePath());
     }
 }

@@ -8,6 +8,10 @@ import java.io.InputStream;
 public class ControllerUtils {
     static byte[] getImageBytes(String imagePath) {
         byte[] result = null;
+        if(imagePath == null || imagePath.isEmpty()){
+            return null;
+        }
+
         try(InputStream inputStream = new FileInputStream(imagePath);
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {

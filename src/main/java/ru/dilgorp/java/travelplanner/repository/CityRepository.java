@@ -18,4 +18,9 @@ public interface CityRepository extends JpaRepository<City, UUID> {
     @Transactional
     @Query("DELETE FROM city c WHERE c.travelUuid = ?1 AND c.userUuid = ?2")
     void deleteTravelCities(UUID travelUuid, UUID userUuid);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM city c WHERE c.travelUuid = ?1 AND c.userUuid = ?2 AND c.name = '' AND c.placesCount = 0")
+    void clearEmptyTravelCities(UUID travelUuid, UUID userUuid);
 }

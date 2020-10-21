@@ -9,6 +9,8 @@ import ru.dilgorp.java.travelplanner.repository.CityPlaceRepository;
 import ru.dilgorp.java.travelplanner.repository.CityRepository;
 import ru.dilgorp.java.travelplanner.repository.TravelRepository;
 
+import java.util.UUID;
+
 @Service
 public class DeletionManagerImpl implements DeletionManager {
     private final TravelRepository travelRepository;
@@ -36,5 +38,12 @@ public class DeletionManagerImpl implements DeletionManager {
     public void delete(City city) {
         cityPlaceRepository.deleteCityPlaces(city.getTravelUuid(), city.getUuid(), city.getUserUuid());
         cityRepository.delete(city);
+    }
+
+    @Override
+    @Modifying
+    @Transactional
+    public void clearEmptyTravels(UUID userUuid) {
+        travelRepository.clearEmptyTravels(userUuid);
     }
 }

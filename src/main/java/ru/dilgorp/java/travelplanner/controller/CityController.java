@@ -32,6 +32,7 @@ public class CityController {
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid
     ) {
+        cityRepository.clearEmptyTravelCities(travelUuid, userUuid);
         return new Response<>(
                 ResponseType.SUCCESS,
                 "",
@@ -101,13 +102,11 @@ public class CityController {
             @PathVariable("travel_uuid") UUID travelUuid,
             @PathVariable("city_uuid") UUID cityUuid
     ) {
-        return ControllerUtils.getImageBytes(
-                cityRepository.findByUuidAndTravelUuidAndUserUuid(
-                        travelUuid,
-                        cityUuid,
-                        userUuid
-                ).getImagePath()
-        );
+        City city = cityRepository.findByUuidAndTravelUuidAndUserUuid(cityUuid, travelUuid, userUuid);
+        if (city == null) {
+            return null;
+        }
+        return ControllerUtils.getImageBytes(city.getImagePath());
     }
 
 }

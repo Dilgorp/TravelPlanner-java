@@ -14,6 +14,8 @@ public interface CityPlaceRepository extends JpaRepository<CityPlace, UUID> {
 
     List<CityPlace> findPlacesByTravelUuidAndUserUuid(UUID travelUuid, UUID userUuid);
 
+    CityPlace findByUuidAndTravelUuidAndCityUuidAndUserUuid(UUID uuid, UUID travelUuid, UUID cityUuid, UUID userUuid);
+
     @Modifying
     @Transactional
     @Query("DELETE FROM city_place cp WHERE cp.travelUuid = ?1 AND cp.userUuid = ?2")
