@@ -19,6 +19,9 @@ public class PlaceController {
     private final String DELETE_PLACE_PATH =
             "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/places/{place_uuid}/delete";
 
+    private final String GET_PLACE_IMAGE_PATH =
+            "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/places/{place_uuid}/photo";
+
     private final CityPlaceRepository cityPlaceRepository;
 
     public PlaceController(CityPlaceRepository cityPlaceRepository) {
@@ -83,5 +86,21 @@ public class PlaceController {
                 "",
                 null
         );
+    }
+
+    @RequestMapping(value = GET_PLACE_IMAGE_PATH, method = RequestMethod.GET)
+    public byte[] getCityPhoto(
+            @PathVariable("user_uuid") UUID userUuid,
+            @PathVariable("travel_uuid") UUID travelUuid,
+            @PathVariable("city_uuid") UUID cityUuid,
+            @PathVariable("place_uuid") UUID placeUuid
+    ) {
+        CityPlace cityPlace = cityPlaceRepository.findByUuidAndTravelUuidAndCityUuidAndUserUuid(
+                placeUuid, travelUuid, cityUuid, userUuid
+        );
+        if (cityPlace == null) {
+            return null;
+        }
+        return ControllerUtils.getImageBytes(cityPlace.getImagePath());
     }
 }
