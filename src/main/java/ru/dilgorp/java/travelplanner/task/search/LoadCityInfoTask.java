@@ -61,14 +61,14 @@ public class LoadCityInfoTask implements Runnable {
                         placeDetails.photos[0].width
                 );
 
-        String filePath = LoadTasksUtils.createImagePath(
+        String filePath = searchTaskOptions.getFileService().createPath(
                 request.getUuid(),
                 placeDetails.name,
-                imageResult,
+                imageResult.contentType,
                 searchTaskOptions.getPhotosFolder()
         );
 
-        LoadTasksUtils.saveImage(imageResult, filePath);
+        searchTaskOptions.getFileService().saveFile(imageResult.imageData, filePath);
         request.setImagePath(filePath);
         userRequestRepository.save(request);
     }

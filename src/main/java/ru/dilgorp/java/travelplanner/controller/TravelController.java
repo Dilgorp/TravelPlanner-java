@@ -1,5 +1,6 @@
 package ru.dilgorp.java.travelplanner.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -8,6 +9,7 @@ import ru.dilgorp.java.travelplanner.domain.City;
 import ru.dilgorp.java.travelplanner.domain.CityPlace;
 import ru.dilgorp.java.travelplanner.domain.Travel;
 import ru.dilgorp.java.travelplanner.domain.manager.DeletionManager;
+import ru.dilgorp.java.travelplanner.file.FileService;
 import ru.dilgorp.java.travelplanner.repository.CityPlaceRepository;
 import ru.dilgorp.java.travelplanner.repository.CityRepository;
 import ru.dilgorp.java.travelplanner.repository.TravelRepository;
@@ -30,17 +32,21 @@ public class TravelController {
     private final TravelRepository travelRepository;
     private final CityRepository cityRepository;
     private final CityPlaceRepository cityPlaceRepository;
+    private final FileService fileService;
 
+    @Autowired
     public TravelController(
             DeletionManager deletionManager,
             TravelRepository travelRepository,
             CityRepository cityRepository,
-            CityPlaceRepository cityPlaceRepository
-    ) {
+            CityPlaceRepository cityPlaceRepository,
+            FileService fileService) {
+
         this.deletionManager = deletionManager;
         this.travelRepository = travelRepository;
         this.cityRepository = cityRepository;
         this.cityPlaceRepository = cityPlaceRepository;
+        this.fileService = fileService;
     }
 
     @RequestMapping(value = ADD_TRAVEL_PATH, method = RequestMethod.POST)
@@ -136,6 +142,6 @@ public class TravelController {
         if(travel == null){
             return null;
         }
-        return ControllerUtils.getImageBytes(travel.getImagePath());
+        return fileService.getBytes(travel.getImagePath());
     }
 }

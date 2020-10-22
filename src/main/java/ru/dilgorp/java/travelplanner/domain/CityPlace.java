@@ -9,7 +9,7 @@ import javax.persistence.Id;
 import java.util.UUID;
 
 @Entity(name = "city_place")
-@JsonIgnoreProperties({"imagePath", "cityUuid", "travelUuid"})
+@JsonIgnoreProperties({"imagePath"})
 public class CityPlace {
 
     @Id

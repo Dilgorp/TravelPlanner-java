@@ -1,8 +1,10 @@
 package ru.dilgorp.java.travelplanner.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.dilgorp.java.travelplanner.domain.City;
 import ru.dilgorp.java.travelplanner.domain.manager.DeletionManager;
+import ru.dilgorp.java.travelplanner.file.FileService;
 import ru.dilgorp.java.travelplanner.repository.CityRepository;
 import ru.dilgorp.java.travelplanner.response.Response;
 import ru.dilgorp.java.travelplanner.response.ResponseType;
@@ -21,10 +23,13 @@ public class CityController {
 
     private final CityRepository cityRepository;
     private final DeletionManager deletionManager;
+    private final FileService fileService;
 
-    public CityController(CityRepository cityRepository, DeletionManager deletionManager) {
+    @Autowired
+    public CityController(CityRepository cityRepository, DeletionManager deletionManager, FileService fileService) {
         this.cityRepository = cityRepository;
         this.deletionManager = deletionManager;
+        this.fileService = fileService;
     }
 
     @RequestMapping(value = GET_CITIES_PATH, method = RequestMethod.GET)
@@ -106,7 +111,7 @@ public class CityController {
         if (city == null) {
             return null;
         }
-        return ControllerUtils.getImageBytes(city.getImagePath());
+        return fileService.getBytes(city.getImagePath());
     }
 
 }

@@ -1,8 +1,10 @@
 package ru.dilgorp.java.travelplanner.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.dilgorp.java.travelplanner.domain.CityPlace;
 import ru.dilgorp.java.travelplanner.domain.google.api.Place;
+import ru.dilgorp.java.travelplanner.file.FileService;
 import ru.dilgorp.java.travelplanner.repository.CityPlaceRepository;
 import ru.dilgorp.java.travelplanner.response.Response;
 import ru.dilgorp.java.travelplanner.response.ResponseType;
@@ -23,9 +25,12 @@ public class PlaceController {
             "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/places/{place_uuid}/photo";
 
     private final CityPlaceRepository cityPlaceRepository;
+    private final FileService fileService;
 
-    public PlaceController(CityPlaceRepository cityPlaceRepository) {
+    @Autowired
+    public PlaceController(CityPlaceRepository cityPlaceRepository, FileService fileService) {
         this.cityPlaceRepository = cityPlaceRepository;
+        this.fileService = fileService;
     }
 
     @RequestMapping(value = GET_PLACES_PATH, method = RequestMethod.GET)
@@ -42,7 +47,7 @@ public class PlaceController {
     }
 
     @RequestMapping(value = ADD_PLACES_PATH, method = RequestMethod.POST)
-    public Response<CityPlace> addPlaces(
+    public Response<List<CityPlace>> addPlaces(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid,
             @PathVariable("city_uuid") UUID cityUuid,
@@ -101,6 +106,6 @@ public class PlaceController {
         if (cityPlace == null) {
             return null;
         }
-        return ControllerUtils.getImageBytes(cityPlace.getImagePath());
+        return fileService.getBytes(cityPlace.getImagePath());
     }
 }

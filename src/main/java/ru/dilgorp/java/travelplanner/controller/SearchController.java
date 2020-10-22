@@ -1,5 +1,6 @@
 package ru.dilgorp.java.travelplanner.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,12 +41,13 @@ public class SearchController {
 
     private final CityRepository cityRepository;
 
+    @Autowired
     public SearchController(
             SearchTaskOptions searchTaskOptions,
             SyncTaskExecutor syncTaskExecutor,
             ThreadPoolTaskExecutor threadPoolTaskExecutor,
-            CityRepository cityRepository
-    ) {
+            CityRepository cityRepository) {
+
         this.searchTaskOptions = searchTaskOptions;
         this.syncTaskExecutor = syncTaskExecutor;
         this.threadPoolTaskExecutor = threadPoolTaskExecutor;
@@ -131,7 +133,7 @@ public class SearchController {
 
     @RequestMapping(value = SEARCH_PLACES_PHOTO_PATH, method = RequestMethod.GET)
     public byte[] getPlacePhoto(@PathVariable("request_uuid") UUID requestUuid) {
-        return ControllerUtils.getImageBytes(
+        return searchTaskOptions.getFileService().getBytes(
                 searchTaskOptions.getPlaceRepository()
                         .getOne(requestUuid)
                         .getImagePath()

@@ -103,14 +103,14 @@ public class LoadPlacesTask implements Runnable {
                 continue;
             }
 
-            String filePath = LoadTasksUtils.createImagePath(
+            String filePath = searchTaskOptions.getFileService().createPath(
                     requestUUID,
                     place.getUuid().toString(),
-                    imageResult,
+                    imageResult.contentType,
                     searchTaskOptions.getPhotosFolder()
             );
 
-            LoadTasksUtils.saveImage(imageResult, filePath);
+            searchTaskOptions.getFileService().saveFile(imageResult.imageData, filePath);
             place.setImagePath(filePath);
         }
 

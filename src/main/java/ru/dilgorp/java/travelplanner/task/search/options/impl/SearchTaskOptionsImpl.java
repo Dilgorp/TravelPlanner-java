@@ -1,6 +1,7 @@
 package ru.dilgorp.java.travelplanner.task.search.options.impl;
 
 import ru.dilgorp.java.travelplanner.api.google.place.GooglePlaceApiService;
+import ru.dilgorp.java.travelplanner.file.FileService;
 import ru.dilgorp.java.travelplanner.repository.google.api.PlaceRepository;
 import ru.dilgorp.java.travelplanner.repository.google.api.UserRequestRepository;
 import ru.dilgorp.java.travelplanner.task.search.options.SearchTaskOptions;
@@ -9,7 +10,6 @@ import java.util.Objects;
 
 public class SearchTaskOptionsImpl implements SearchTaskOptions {
 
-    private final String apiKey;
     private final String language;
     private final String photosFolder;
     private final int expiredDays;
@@ -19,17 +19,18 @@ public class SearchTaskOptionsImpl implements SearchTaskOptions {
     private final PlaceRepository placeRepository;
     private final GooglePlaceApiService placeApiService;
 
+    private final FileService fileService;
+
     public SearchTaskOptionsImpl(
-            String apiKey,
             String language,
             String photosFolder,
             int expiredDays,
             int placesCount,
             UserRequestRepository userRequestRepository,
             PlaceRepository placeRepository,
-            GooglePlaceApiService placeApiService
+            GooglePlaceApiService placeApiService,
+            FileService fileService
     ) {
-        this.apiKey = apiKey;
         this.language = language;
         this.photosFolder = photosFolder;
         this.expiredDays = expiredDays;
@@ -37,11 +38,7 @@ public class SearchTaskOptionsImpl implements SearchTaskOptions {
         this.userRequestRepository = userRequestRepository;
         this.placeRepository = placeRepository;
         this.placeApiService = placeApiService;
-    }
-
-    @Override
-    public String getApiKey() {
-        return apiKey;
+        this.fileService = fileService;
     }
 
     @Override
@@ -75,13 +72,17 @@ public class SearchTaskOptionsImpl implements SearchTaskOptions {
     }
 
     @Override
+    public FileService getFileService() {
+        return fileService;
+    }
+
+    @Override
     public int getPlacesCount() {
         return placesCount;
     }
 
     public static class Builder implements SearchTaskOptions.Builder {
 
-        private String apiKey;
         private String language;
         private String photosFolder;
         private int expiredDays;
@@ -89,12 +90,7 @@ public class SearchTaskOptionsImpl implements SearchTaskOptions {
         private UserRequestRepository userRequestRepository;
         private PlaceRepository placeRepository;
         private GooglePlaceApiService placeApiService;
-
-        @Override
-        public SearchTaskOptions.Builder setApiKey(String apiKey) {
-            this.apiKey = apiKey;
-            return this;
-        }
+        private FileService fileService;
 
         @Override
         public SearchTaskOptions.Builder setLanguage(String language) {
@@ -139,16 +135,22 @@ public class SearchTaskOptionsImpl implements SearchTaskOptions {
         }
 
         @Override
+        public SearchTaskOptions.Builder setFileService(FileService fileService) {
+            this.fileService = fileService;
+            return this;
+        }
+
+        @Override
         public SearchTaskOptions build() {
             return new SearchTaskOptionsImpl(
-                    Objects.requireNonNull(apiKey),
                     Objects.requireNonNull(language),
                     Objects.requireNonNull(photosFolder),
                     expiredDays,
                     placesCount,
                     Objects.requireNonNull(userRequestRepository),
                     Objects.requireNonNull(placeRepository),
-                    Objects.requireNonNull(placeApiService)
+                    Objects.requireNonNull(placeApiService),
+                    Objects.requireNonNull(fileService)
             );
         }
     }
