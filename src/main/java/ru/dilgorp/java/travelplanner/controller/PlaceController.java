@@ -78,7 +78,7 @@ public class PlaceController {
     }
 
     @RequestMapping(value = DELETE_PLACE_PATH, method = RequestMethod.DELETE)
-    public Response<CityPlace> deletePlace(
+    public Response<List<CityPlace>> deletePlace(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid,
             @PathVariable("city_uuid") UUID cityUuid,
@@ -89,12 +89,12 @@ public class PlaceController {
         return new Response<>(
                 ResponseType.SUCCESS,
                 "",
-                null
+                cityPlaceRepository.findPlacesByTravelUuidAndCityUuidAndUserUuid(travelUuid, cityUuid, userUuid)
         );
     }
 
     @RequestMapping(value = GET_PLACE_IMAGE_PATH, method = RequestMethod.GET)
-    public byte[] getCityPhoto(
+    public byte[] getCityPlacePhoto(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid,
             @PathVariable("city_uuid") UUID cityUuid,

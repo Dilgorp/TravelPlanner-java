@@ -7,7 +7,6 @@ import java.util.UUID;
 
 @Entity(name = "place")
 @JsonIgnoreProperties({
-        "imagePath",
         "placeId",
         "currentPageToken",
         "nextPageToken",

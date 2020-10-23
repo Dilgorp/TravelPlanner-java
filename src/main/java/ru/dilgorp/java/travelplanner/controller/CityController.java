@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.dilgorp.java.travelplanner.domain.City;
 import ru.dilgorp.java.travelplanner.domain.manager.DeletionManager;
 import ru.dilgorp.java.travelplanner.file.FileService;
+import ru.dilgorp.java.travelplanner.repository.CityPlaceRepository;
 import ru.dilgorp.java.travelplanner.repository.CityRepository;
-import ru.dilgorp.java.travelplanner.repository.TravelRepository;
 import ru.dilgorp.java.travelplanner.response.Response;
 import ru.dilgorp.java.travelplanner.response.ResponseType;
 
@@ -22,18 +22,21 @@ public class CityController {
     private final String GET_CITIES_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/all";
     private final String ADD_CITY_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/add";
     private final String GET_CITY_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}";
+    private final String REFRESH_CITY_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/refresh";
     private final String DELETE_CITY_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/delete";
     private final String GET_CITY_IMAGE_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/photo";
     private final String SET_CITY_NUMBER_PATH =
             "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/number/set/{number}";
 
     private final CityRepository cityRepository;
+    private final CityPlaceRepository cityPlaceRepository;
     private final DeletionManager deletionManager;
     private final FileService fileService;
 
     @Autowired
-    public CityController(CityRepository cityRepository, DeletionManager deletionManager, FileService fileService) {
+    public CityController(CityRepository cityRepository, CityPlaceRepository cityPlaceRepository, DeletionManager deletionManager, FileService fileService) {
         this.cityRepository = cityRepository;
+        this.cityPlaceRepository = cityPlaceRepository;
         this.deletionManager = deletionManager;
         this.fileService = fileService;
     }
@@ -59,7 +62,7 @@ public class CityController {
         List<City> cities = cityRepository.findByTravelUuidAndUserUuidOrderByTravelNumber(travelUuid, userUuid);
         int travelNumber = 0;
         if (cities.size() > 0) {
-            travelNumber = cities.get(cities.size() - 1).getTravelNumber();
+            travelNumber = cities.get(cities.size() - 1).getTravelNumber() + 1;
         }
         City city = new City(
                 "", 0, "", "",
@@ -88,6 +91,35 @@ public class CityController {
                         travelUuid,
                         userUuid
                 )
+        );
+    }
+
+    @RequestMapping(value = REFRESH_CITY_PATH, method = RequestMethod.POST)
+    public Response<City> refreshCity(
+            @PathVariable("user_uuid") UUID userUuid,
+            @PathVariable("travel_uuid") UUID travelUuid,
+            @PathVariable("city_uuid") UUID cityUuid
+    ) {
+        City city = cityRepository.findByUuidAndTravelUuidAndUserUuid(
+                cityUuid,
+                travelUuid,
+                userUuid
+        );
+
+        city.setPlacesCount(
+                cityPlaceRepository.findPlacesByTravelUuidAndCityUuidAndUserUuid(
+                        travelUuid,
+                        cityUuid,
+                        userUuid
+                ).size()
+        );
+
+        cityRepository.save(city);
+
+        return new Response<>(
+                ResponseType.SUCCESS,
+                "",
+                city
         );
     }
 
