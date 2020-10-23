@@ -39,7 +39,7 @@ public class AuthenticationController {
         return new Response<>(ResponseType.SUCCESS, "", userForSaving);
     }
 
-    @GetMapping(LOGIN_PATH)
+    @RequestMapping(value = LOGIN_PATH, method = RequestMethod.POST)
     public Response<User> getLogin(@RequestBody User user) {
         User userDB = userRepository.findByUsername(user.getUsername());
         return new Response<>(ResponseType.SUCCESS, "", userDB);

@@ -76,13 +76,13 @@ public class TravelController {
     }
 
     @RequestMapping(value = DELETE_TRAVEL_PATH, method = RequestMethod.DELETE)
-    public Response<Travel> deleteTravel(
+    public Response<List<Travel>> deleteTravel(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid
     ) {
         Travel travel = travelRepository.getOne(travelUuid);
         deletionManager.delete(travel);
-        return new Response<>(ResponseType.SUCCESS, "", null);
+        return new Response<>(ResponseType.SUCCESS, "", travelRepository.findByUserUuid(userUuid));
     }
 
     @RequestMapping(value = REFRESH_TRAVEL_PATH, method = RequestMethod.POST)
@@ -102,7 +102,7 @@ public class TravelController {
             travelName = cities.get(0).getName() + " - " + cities.get(1).getName();
             travelImage = cities.get(0).getImagePath();
         } else if (cities.size() > 2) {
-            travelName = cities.get(0).getName() + " - ... - " + cities.get(1).getName();
+            travelName = cities.get(0).getName() + " - ... - " + cities.get(cities.size() - 1).getName();
             travelImage = cities.get(0).getImagePath();
         } else {
             travelName = "";
@@ -139,7 +139,7 @@ public class TravelController {
             @PathVariable("user_uuid") UUID userUuid
     ) {
         Travel travel = travelRepository.findByUuidAndUserUuid(travelUuid, userUuid);
-        if(travel == null){
+        if (travel == null) {
             return null;
         }
         return fileService.getBytes(travel.getImagePath());

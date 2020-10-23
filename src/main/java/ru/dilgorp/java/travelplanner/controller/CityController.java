@@ -1,11 +1,15 @@
 package ru.dilgorp.java.travelplanner.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import ru.dilgorp.java.travelplanner.domain.City;
 import ru.dilgorp.java.travelplanner.domain.manager.DeletionManager;
 import ru.dilgorp.java.travelplanner.file.FileService;
 import ru.dilgorp.java.travelplanner.repository.CityRepository;
+import ru.dilgorp.java.travelplanner.repository.TravelRepository;
 import ru.dilgorp.java.travelplanner.response.Response;
 import ru.dilgorp.java.travelplanner.response.ResponseType;
 
@@ -20,6 +24,8 @@ public class CityController {
     private final String GET_CITY_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}";
     private final String DELETE_CITY_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/delete";
     private final String GET_CITY_IMAGE_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/photo";
+    private final String SET_CITY_NUMBER_PATH =
+            "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/number/set/{number}";
 
     private final CityRepository cityRepository;
     private final DeletionManager deletionManager;
@@ -50,9 +56,14 @@ public class CityController {
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid
     ) {
+        List<City> cities = cityRepository.findByTravelUuidAndUserUuidOrderByTravelNumber(travelUuid, userUuid);
+        int travelNumber = 0;
+        if (cities.size() > 0) {
+            travelNumber = cities.get(cities.size() - 1).getTravelNumber();
+        }
         City city = new City(
-                "", 0, "", "", travelUuid, userUuid,
-                cityRepository.findByTravelUuidAndUserUuidOrderByTravelNumber(travelUuid, userUuid).size()
+                "", 0, "", "",
+                travelUuid, userUuid, travelNumber
         );
 
         cityRepository.save(city);
@@ -73,23 +84,23 @@ public class CityController {
                 ResponseType.SUCCESS,
                 "",
                 cityRepository.findByUuidAndTravelUuidAndUserUuid(
-                        travelUuid,
                         cityUuid,
+                        travelUuid,
                         userUuid
                 )
         );
     }
 
     @RequestMapping(value = DELETE_CITY_PATH, method = RequestMethod.DELETE)
-    public Response<City> deleteCity(
+    public Response<List<City>> deleteCity(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid,
             @PathVariable("city_uuid") UUID cityUuid
     ) {
         deletionManager.delete(
                 cityRepository.findByUuidAndTravelUuidAndUserUuid(
-                        travelUuid,
                         cityUuid,
+                        travelUuid,
                         userUuid
                 )
         );
@@ -97,7 +108,7 @@ public class CityController {
         return new Response<>(
                 ResponseType.SUCCESS,
                 "",
-                null
+                cityRepository.findByTravelUuidAndUserUuidOrderByTravelNumber(travelUuid, userUuid)
         );
     }
 
@@ -112,6 +123,32 @@ public class CityController {
             return null;
         }
         return fileService.getBytes(city.getImagePath());
+    }
+
+    @RequestMapping(value = SET_CITY_NUMBER_PATH, method = RequestMethod.POST)
+    public Response<City> setCityNumber(
+            @PathVariable("user_uuid") UUID userUuid,
+            @PathVariable("travel_uuid") UUID travelUuid,
+            @PathVariable("city_uuid") UUID cityUuid,
+            @PathVariable("number") int number
+    ) {
+        City city = cityRepository.findByUuidAndTravelUuidAndUserUuid(cityUuid, travelUuid, userUuid);
+        if (city == null) {
+            return new Response<>(
+                    ResponseType.ERROR,
+                    "Город не найден",
+                    null
+            );
+        }
+
+        city.setTravelNumber(number);
+        cityRepository.save(city);
+
+        return new Response<>(
+                ResponseType.SUCCESS,
+                "",
+                city
+        );
     }
 
 }
