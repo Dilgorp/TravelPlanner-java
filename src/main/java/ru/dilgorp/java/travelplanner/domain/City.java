@@ -1,12 +1,16 @@
 package ru.dilgorp.java.travelplanner.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.UUID;
 
 @Entity(name = "city")
 @JsonIgnoreProperties({"imagePath"})
+@Data
+@NoArgsConstructor
 public class City {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -23,8 +27,6 @@ public class City {
 
     private int travelNumber;
 
-    public City() {}
-
     public City(
             String name, int placesCount, String description, String imagePath,
             UUID travelUuid, UUID userUuid, int travelNumber
@@ -36,77 +38,5 @@ public class City {
         this.travelUuid = travelUuid;
         this.userUuid = userUuid;
         this.travelNumber = travelNumber;
-    }
-
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getPlacesCount() {
-        return placesCount;
-    }
-
-    public void setPlacesCount(int placesCount) {
-        this.placesCount = placesCount;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getImagePath() {
-        return imagePath;
-    }
-
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
-    }
-
-    public UUID getTravelUuid() {
-        return travelUuid;
-    }
-
-    public void setTravelUuid(UUID travelUuid) {
-        this.travelUuid = travelUuid;
-    }
-
-    public UUID getUserUuid() {
-        return userUuid;
-    }
-
-    public void setUserUuid(UUID userUuid) {
-        this.userUuid = userUuid;
-    }
-
-    public int getTravelNumber() {
-        return travelNumber;
-    }
-
-    public void setTravelNumber(int travelNumber) {
-        this.travelNumber = travelNumber;
-    }
-
-    public UUID getUserRequestUuid() {
-        return userRequestUuid;
-    }
-
-    public void setUserRequestUuid(UUID userRequestUuid) {
-        this.userRequestUuid = userRequestUuid;
     }
 }

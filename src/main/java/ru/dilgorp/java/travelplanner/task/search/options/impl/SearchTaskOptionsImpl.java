@@ -21,7 +21,7 @@ public class SearchTaskOptionsImpl implements SearchTaskOptions {
 
     private final FileService fileService;
 
-    public SearchTaskOptionsImpl(
+    private SearchTaskOptionsImpl(
             String language,
             String photosFolder,
             int expiredDays,

@@ -4,6 +4,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import ru.dilgorp.java.travelplanner.domain.Role;
 import ru.dilgorp.java.travelplanner.domain.User;
+import ru.dilgorp.java.travelplanner.domain.UserDTO;
 import ru.dilgorp.java.travelplanner.repository.UserRepository;
 import ru.dilgorp.java.travelplanner.response.Response;
 import ru.dilgorp.java.travelplanner.response.ResponseType;
@@ -14,9 +15,6 @@ import java.util.Collections;
 @RestController
 public class AuthenticationController {
 
-    public static final String REGISTRATION_PATH = "/registration";
-    public static final String LOGIN_PATH = "/login";
-
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
 
@@ -25,8 +23,8 @@ public class AuthenticationController {
         this.encoder = encoder;
     }
 
-    @RequestMapping(value = REGISTRATION_PATH, method = RequestMethod.POST)
-    public Response<User> postRegistration(@RequestBody User user) {
+    @PostMapping("/registration")
+    public Response<User> postRegistration(@RequestBody UserDTO user) {
         User userFromDb = userRepository.findByUsername(user.getUsername());
         if (userFromDb != null) {
             return new Response<>(ResponseType.ERROR, "Пользователь уже существует", null);
@@ -39,8 +37,8 @@ public class AuthenticationController {
         return new Response<>(ResponseType.SUCCESS, "", userForSaving);
     }
 
-    @RequestMapping(value = LOGIN_PATH, method = RequestMethod.POST)
-    public Response<User> getLogin(@RequestBody User user) {
+    @PostMapping("/login")
+    public Response<User> getLogin(@RequestBody UserDTO user) {
         User userDB = userRepository.findByUsername(user.getUsername());
         return new Response<>(ResponseType.SUCCESS, "", userDB);
     }

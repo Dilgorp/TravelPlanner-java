@@ -14,15 +14,8 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@RequestMapping("/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/places")
 public class PlaceController {
-
-    private final String GET_PLACES_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/places/all";
-    private final String ADD_PLACES_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/places/add";
-    private final String DELETE_PLACE_PATH =
-            "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/places/{place_uuid}/delete";
-
-    private final String GET_PLACE_IMAGE_PATH =
-            "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/places/{place_uuid}/photo";
 
     private final CityPlaceRepository cityPlaceRepository;
     private final FileService fileService;
@@ -33,7 +26,7 @@ public class PlaceController {
         this.fileService = fileService;
     }
 
-    @RequestMapping(value = GET_PLACES_PATH, method = RequestMethod.GET)
+    @GetMapping("/all")
     public Response<List<CityPlace>> getPlaces(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid,
@@ -46,7 +39,7 @@ public class PlaceController {
         );
     }
 
-    @RequestMapping(value = ADD_PLACES_PATH, method = RequestMethod.POST)
+    @PostMapping("/add")
     public Response<List<CityPlace>> addPlaces(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid,
@@ -77,7 +70,7 @@ public class PlaceController {
         );
     }
 
-    @RequestMapping(value = DELETE_PLACE_PATH, method = RequestMethod.DELETE)
+    @DeleteMapping("/{place_uuid}/delete")
     public Response<List<CityPlace>> deletePlace(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid,
@@ -93,7 +86,7 @@ public class PlaceController {
         );
     }
 
-    @RequestMapping(value = GET_PLACE_IMAGE_PATH, method = RequestMethod.GET)
+    @GetMapping("/{place_uuid}/photo")
     public byte[] getCityPlacePhoto(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid,
@@ -104,7 +97,7 @@ public class PlaceController {
                 placeUuid, travelUuid, cityUuid, userUuid
         );
         if (cityPlace == null) {
-            return null;
+            return new byte[]{};
         }
         return fileService.getBytes(cityPlace.getImagePath());
     }

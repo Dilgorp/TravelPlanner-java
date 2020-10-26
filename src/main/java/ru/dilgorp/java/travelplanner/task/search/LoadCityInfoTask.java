@@ -1,11 +1,14 @@
 package ru.dilgorp.java.travelplanner.task.search;
 
 import com.google.maps.ImageResult;
+import com.google.maps.errors.ApiException;
 import com.google.maps.model.PlaceDetails;
 import ru.dilgorp.java.travelplanner.domain.google.api.UserRequest;
+import ru.dilgorp.java.travelplanner.exception.IORuntimeException;
 import ru.dilgorp.java.travelplanner.repository.google.api.UserRequestRepository;
 import ru.dilgorp.java.travelplanner.task.search.options.SearchTaskOptions;
 
+import java.io.IOException;
 import java.util.Date;
 
 public class LoadCityInfoTask implements Runnable {
@@ -42,24 +45,25 @@ public class LoadCityInfoTask implements Runnable {
             fillUserRequest(request, placeDetails, cityName);
 
             searchTaskOptions.getUserRequestRepository().save(request);
-            if (placeDetails.photos.length > 0) {
+            if (placeDetails.photos != null && placeDetails.photos.length > 0) {
                 loadCityImage(placeDetails, request.getText());
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new IORuntimeException(e);
         }
     }
 
-    private void loadCityImage(PlaceDetails placeDetails, String text) throws Exception {
+    private void loadCityImage(PlaceDetails placeDetails, String text) throws InterruptedException, ApiException, IOException {
         UserRequestRepository userRequestRepository = searchTaskOptions.getUserRequestRepository();
         UserRequest request = userRequestRepository.findByText(text);
 
-        ImageResult imageResult =
-                searchTaskOptions.getPlaceApiService().getImageDetails(
-                        placeDetails.photos[0].photoReference,
-                        placeDetails.photos[0].width
-                );
+        ImageResult imageResult;
+
+        imageResult = searchTaskOptions.getPlaceApiService().getImageDetails(
+                placeDetails.photos[0].photoReference,
+                placeDetails.photos[0].width
+        );
 
         String filePath = searchTaskOptions.getFileService().createPath(
                 request.getUuid(),

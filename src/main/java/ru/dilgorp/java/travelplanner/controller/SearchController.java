@@ -3,10 +3,7 @@ package ru.dilgorp.java.travelplanner.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.dilgorp.java.travelplanner.domain.City;
 import ru.dilgorp.java.travelplanner.domain.google.api.Place;
 import ru.dilgorp.java.travelplanner.domain.google.api.UserRequest;
@@ -25,13 +22,6 @@ import java.util.UUID;
 @SuppressWarnings("unused")
 @RestController
 public class SearchController {
-
-    private static final String SEARCH_CITY_PATH =
-            "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/search/{cityname}";
-
-    private static final String SEARCH_CITY_PLACES_PATH = "/search/places/{request_uuid}";
-
-    private static final String SEARCH_PLACES_PHOTO_PATH = "/search/places/photo/{request_uuid}";
 
     public static final String ASYNC_TASK_EXECUTOR_NAME = "ru.dilgorp.java.travelplanner.loadAsyncTaskExecutor";
 
@@ -54,7 +44,7 @@ public class SearchController {
         this.cityRepository = cityRepository;
     }
 
-    @RequestMapping(value = SEARCH_CITY_PATH, method = RequestMethod.GET)
+    @GetMapping("/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/search/{cityname}")
     public Response<City> getCityInfo(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid,
@@ -83,9 +73,7 @@ public class SearchController {
             return response;
         }
 
-        City city = cityRepository.findByUuidAndTravelUuidAndUserUuid(cityUuid, travelUuid, userUuid);
-        fillCity(userRequestFromDB, city);
-        cityRepository.save(city);
+        City city = saveCityToTravel(userUuid, travelUuid, cityUuid, userRequestFromDB);
 
         response = new Response<>(ResponseType.SUCCESS, "", city);
 
@@ -97,7 +85,7 @@ public class SearchController {
     }
 
 
-    @RequestMapping(value = SEARCH_CITY_PLACES_PATH, method = RequestMethod.GET)
+    @GetMapping("/search/places/{request_uuid}")
     public Response<List<Place>> getCityPlaces(
             @PathVariable("request_uuid") UUID requestUuid
     ) {
@@ -106,7 +94,7 @@ public class SearchController {
                 searchTaskOptions.getPlaceRepository()
                         .findByUserRequestUuid(requestUuid);
 
-        if (places.size() == 0) {
+        if (places.isEmpty()) {
             loadPlaces(requestUuid);
 
             places = searchTaskOptions.getPlaceRepository()
@@ -114,7 +102,7 @@ public class SearchController {
         }
 
         Response<List<Place>> response;
-        if (places.size() == 0) {
+        if (places.isEmpty()) {
             response = new Response<>(
                     ResponseType.ERROR,
                     "Интересные места не найдены",
@@ -131,13 +119,20 @@ public class SearchController {
         return response;
     }
 
-    @RequestMapping(value = SEARCH_PLACES_PHOTO_PATH, method = RequestMethod.GET)
+    @GetMapping("/search/places/photo/{request_uuid}")
     public byte[] getPlacePhoto(@PathVariable("request_uuid") UUID requestUuid) {
         return searchTaskOptions.getFileService().getBytes(
                 searchTaskOptions.getPlaceRepository()
                         .getOne(requestUuid)
                         .getImagePath()
         );
+    }
+
+    private City saveCityToTravel(UUID userUuid, UUID travelUuid, UUID cityUuid, UserRequest userRequestFromDB) {
+        City city = cityRepository.findByUuidAndTravelUuidAndUserUuid(cityUuid, travelUuid, userUuid);
+        fillCity(userRequestFromDB, city);
+        cityRepository.save(city);
+        return city;
     }
 
     private void fillCity(UserRequest userRequestFromDB, City city) {

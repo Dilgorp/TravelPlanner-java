@@ -1,10 +1,7 @@
 package ru.dilgorp.java.travelplanner.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.dilgorp.java.travelplanner.domain.City;
 import ru.dilgorp.java.travelplanner.domain.manager.DeletionManager;
 import ru.dilgorp.java.travelplanner.file.FileService;
@@ -17,16 +14,8 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@RequestMapping("/user/{user_uuid}/travel/{travel_uuid}/city")
 public class CityController {
-
-    private final String GET_CITIES_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/all";
-    private final String ADD_CITY_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/add";
-    private final String GET_CITY_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}";
-    private final String REFRESH_CITY_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/refresh";
-    private final String DELETE_CITY_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/delete";
-    private final String GET_CITY_IMAGE_PATH = "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/photo";
-    private final String SET_CITY_NUMBER_PATH =
-            "/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/number/set/{number}";
 
     private final CityRepository cityRepository;
     private final CityPlaceRepository cityPlaceRepository;
@@ -41,7 +30,7 @@ public class CityController {
         this.fileService = fileService;
     }
 
-    @RequestMapping(value = GET_CITIES_PATH, method = RequestMethod.GET)
+    @GetMapping("/all")
     public Response<List<City>> getCities(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid
@@ -54,14 +43,14 @@ public class CityController {
         );
     }
 
-    @RequestMapping(value = ADD_CITY_PATH, method = RequestMethod.POST)
+    @PostMapping("/add")
     public Response<City> addCity(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid
     ) {
         List<City> cities = cityRepository.findByTravelUuidAndUserUuidOrderByTravelNumber(travelUuid, userUuid);
         int travelNumber = 0;
-        if (cities.size() > 0) {
+        if (!cities.isEmpty()) {
             travelNumber = cities.get(cities.size() - 1).getTravelNumber() + 1;
         }
         City city = new City(
@@ -77,7 +66,7 @@ public class CityController {
         );
     }
 
-    @RequestMapping(value = GET_CITY_PATH, method = RequestMethod.GET)
+    @GetMapping("/{city_uuid}")
     public Response<City> getCity(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid,
@@ -94,7 +83,7 @@ public class CityController {
         );
     }
 
-    @RequestMapping(value = REFRESH_CITY_PATH, method = RequestMethod.POST)
+    @PostMapping("/{city_uuid}/refresh")
     public Response<City> refreshCity(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid,
@@ -123,7 +112,7 @@ public class CityController {
         );
     }
 
-    @RequestMapping(value = DELETE_CITY_PATH, method = RequestMethod.DELETE)
+    @DeleteMapping("/{city_uuid}/delete")
     public Response<List<City>> deleteCity(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid,
@@ -144,7 +133,7 @@ public class CityController {
         );
     }
 
-    @RequestMapping(value = GET_CITY_IMAGE_PATH, method = RequestMethod.GET)
+    @GetMapping("/{city_uuid}/photo")
     public byte[] getCityPhoto(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid,
@@ -152,12 +141,12 @@ public class CityController {
     ) {
         City city = cityRepository.findByUuidAndTravelUuidAndUserUuid(cityUuid, travelUuid, userUuid);
         if (city == null) {
-            return null;
+            return new byte[]{};
         }
         return fileService.getBytes(city.getImagePath());
     }
 
-    @RequestMapping(value = SET_CITY_NUMBER_PATH, method = RequestMethod.POST)
+    @PostMapping("/{city_uuid}/number/set/{number}")
     public Response<City> setCityNumber(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid,

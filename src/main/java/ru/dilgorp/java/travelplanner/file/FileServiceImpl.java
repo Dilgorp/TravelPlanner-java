@@ -1,11 +1,11 @@
 package ru.dilgorp.java.travelplanner.file;
 
 import org.springframework.stereotype.Service;
+import ru.dilgorp.java.travelplanner.exception.IORuntimeException;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.UUID;
 
 @Service
@@ -14,7 +14,7 @@ public class FileServiceImpl implements FileService {
     public byte[] getBytes(String path) {
         byte[] result;
         if (path == null || path.isEmpty()) {
-            return null;
+            return new byte[]{};
         }
 
         try (InputStream inputStream = new FileInputStream(path);
@@ -23,7 +23,7 @@ public class FileServiceImpl implements FileService {
             outputStream.write(inputStream.readAllBytes());
             result = outputStream.toByteArray();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new IORuntimeException(e);
         }
         return result;
     }
@@ -32,20 +32,17 @@ public class FileServiceImpl implements FileService {
     public String createPath(UUID requestUUID, String fileName, String contentType, String folder) {
         String directory = folder
                 + requestUUID.toString();
-        String filePath = directory + "\\"
-                + fileName + "."
-                + contentType.split("/")[1];
 
-        Path directoryPath = Paths.get(directory);
+        Path directoryPath = Path.of(directory);
         if (!Files.exists(directoryPath)) {
             try {
                 Files.createDirectory(directoryPath);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new IORuntimeException(e);
             }
         }
 
-        return filePath;
+        return Path.of(directory, fileName + "." + contentType.split("/")[1]).toString();
     }
 
     @Override
@@ -53,7 +50,7 @@ public class FileServiceImpl implements FileService {
         try (OutputStream outputStream = new FileOutputStream(path)) {
             outputStream.write(bytes);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new IORuntimeException(e);
         }
     }
 }

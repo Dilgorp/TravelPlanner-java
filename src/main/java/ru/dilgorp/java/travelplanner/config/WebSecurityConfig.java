@@ -8,8 +8,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import ru.dilgorp.java.travelplanner.service.DetailService;
 
-import static ru.dilgorp.java.travelplanner.controller.AuthenticationController.REGISTRATION_PATH;
-
 
 @Configuration
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -28,7 +26,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .httpBasic().and()
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers(REGISTRATION_PATH).permitAll()
+                .antMatchers("/registration").permitAll()
                 .anyRequest().authenticated();
     }
 

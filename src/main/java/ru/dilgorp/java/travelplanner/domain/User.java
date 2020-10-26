@@ -1,10 +1,15 @@
 package ru.dilgorp.java.travelplanner.domain;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 import java.util.Set;
 import java.util.UUID;
 
 @Entity(name = "usr")
+@Data
+@NoArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -18,43 +23,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
 
-    public User() {
-    }
-
     public User(String username, String password) {
         this.username = username;
         this.password = password;
-    }
-
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Set<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
     }
 }

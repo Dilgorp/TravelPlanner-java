@@ -7,6 +7,7 @@ import com.google.maps.model.PlacesSearchResult;
 import ru.dilgorp.java.travelplanner.api.google.place.GooglePlaceApiService;
 import ru.dilgorp.java.travelplanner.domain.google.api.Place;
 import ru.dilgorp.java.travelplanner.domain.google.api.UserRequest;
+import ru.dilgorp.java.travelplanner.exception.IORuntimeException;
 import ru.dilgorp.java.travelplanner.repository.google.api.PlaceRepository;
 import ru.dilgorp.java.travelplanner.repository.google.api.UserRequestRepository;
 import ru.dilgorp.java.travelplanner.task.search.options.SearchTaskOptions;
@@ -58,7 +59,7 @@ public class LoadPlacesTask implements Runnable {
         GooglePlaceApiService apiService = searchTaskOptions.getPlaceApiService();
 
         Optional<UserRequest> byId = userRequestRepository.findById(requestUUID);
-        if (!byId.isPresent()) {
+        if (byId.isEmpty()) {
             return;
         }
 
@@ -85,7 +86,7 @@ public class LoadPlacesTask implements Runnable {
             loadImages();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new IORuntimeException(e);
         }
     }
 

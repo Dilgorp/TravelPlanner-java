@@ -1,6 +1,8 @@
 package ru.dilgorp.java.travelplanner.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -10,6 +12,8 @@ import java.util.UUID;
 
 @Entity(name = "city_place")
 @JsonIgnoreProperties({"imagePath"})
+@Data
+@NoArgsConstructor
 public class CityPlace {
 
     @Id
@@ -23,71 +27,12 @@ public class CityPlace {
     private UUID travelUuid;
     private UUID userUuid;
 
-    public CityPlace() {
-    }
-
     public CityPlace(String name, String description, String imagePath, UUID cityUuid, UUID travelUuid, UUID userUuid) {
         this.name = name;
         this.description = description;
         this.imagePath = imagePath;
         this.cityUuid = cityUuid;
         this.travelUuid = travelUuid;
-        this.userUuid = userUuid;
-    }
-
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getImagePath() {
-        return imagePath;
-    }
-
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
-    }
-
-    public UUID getCityUuid() {
-        return cityUuid;
-    }
-
-    public void setCityUuid(UUID cityUuid) {
-        this.cityUuid = cityUuid;
-    }
-
-    public UUID getTravelUuid() {
-        return travelUuid;
-    }
-
-    public void setTravelUuid(UUID travelUuid) {
-        this.travelUuid = travelUuid;
-    }
-
-    public UUID getUserUuid() {
-        return userUuid;
-    }
-
-    public void setUserUuid(UUID userUuid) {
         this.userUuid = userUuid;
     }
 }

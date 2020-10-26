@@ -1,10 +1,7 @@
 package ru.dilgorp.java.travelplanner.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.dilgorp.java.travelplanner.domain.City;
 import ru.dilgorp.java.travelplanner.domain.CityPlace;
 import ru.dilgorp.java.travelplanner.domain.Travel;
@@ -20,13 +17,8 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@RequestMapping("/user/{user_uuid}/travel")
 public class TravelController {
-    private static final String ADD_TRAVEL_PATH = "/user/{user_uuid}/travel/add";
-    private static final String GET_TRAVEL_PATH = "/user/{user_uuid}/travel/{travel_uuid}";
-    private static final String DELETE_TRAVEL_PATH = "/user/{user_uuid}/travel/{travel_uuid}/delete";
-    private static final String REFRESH_TRAVEL_PATH = "/user/{user_uuid}/travel/{travel_uuid}/refresh";
-    private static final String ALL_TRAVEL_PATH = "/user/{user_uuid}/travel/all";
-    private static final String GET_TRAVEL_IMAGE_PATH = "/user/{user_uuid}/travel/{travel_uuid}/photo";
 
     private final DeletionManager deletionManager;
     private final TravelRepository travelRepository;
@@ -49,7 +41,7 @@ public class TravelController {
         this.fileService = fileService;
     }
 
-    @RequestMapping(value = ADD_TRAVEL_PATH, method = RequestMethod.POST)
+    @PostMapping("/add")
     public Response<Travel> addTravel(
             @PathVariable("user_uuid") UUID userUuid
     ) {
@@ -63,7 +55,7 @@ public class TravelController {
         );
     }
 
-    @RequestMapping(value = GET_TRAVEL_PATH, method = RequestMethod.GET)
+    @GetMapping("/{travel_uuid}")
     public Response<Travel> getTravel(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid
@@ -75,7 +67,7 @@ public class TravelController {
         );
     }
 
-    @RequestMapping(value = DELETE_TRAVEL_PATH, method = RequestMethod.DELETE)
+    @DeleteMapping("/{travel_uuid}/delete")
     public Response<List<Travel>> deleteTravel(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid
@@ -85,7 +77,7 @@ public class TravelController {
         return new Response<>(ResponseType.SUCCESS, "", travelRepository.findByUserUuid(userUuid));
     }
 
-    @RequestMapping(value = REFRESH_TRAVEL_PATH, method = RequestMethod.POST)
+    @PostMapping("/{travel_uuid}/refresh")
     public Response<Travel> refreshTravel(
             @PathVariable("user_uuid") UUID userUuid,
             @PathVariable("travel_uuid") UUID travelUuid
@@ -121,7 +113,7 @@ public class TravelController {
         return new Response<>(ResponseType.SUCCESS, "", travel);
     }
 
-    @RequestMapping(value = ALL_TRAVEL_PATH, method = RequestMethod.GET)
+    @GetMapping("/all")
     public Response<List<Travel>> allTravels(
             @PathVariable("user_uuid") UUID userUuid
     ) {
@@ -133,14 +125,14 @@ public class TravelController {
         );
     }
 
-    @RequestMapping(value = GET_TRAVEL_IMAGE_PATH, method = RequestMethod.GET)
+    @GetMapping("/{travel_uuid}/photo")
     public byte[] getTravelImage(
             @PathVariable("travel_uuid") UUID travelUuid,
             @PathVariable("user_uuid") UUID userUuid
     ) {
         Travel travel = travelRepository.findByUuidAndUserUuid(travelUuid, userUuid);
         if (travel == null) {
-            return null;
+            return new byte[]{};
         }
         return fileService.getBytes(travel.getImagePath());
     }

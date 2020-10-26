@@ -1,6 +1,8 @@
 package ru.dilgorp.java.travelplanner.domain.google.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -12,6 +14,8 @@ import java.util.UUID;
         "nextPageToken",
         "userRequestUuid"
 })
+@Data
+@NoArgsConstructor
 public class Place {
 
     @Id
@@ -28,81 +32,4 @@ public class Place {
     private String nextPageToken;
 
     private UUID userRequestUuid;
-
-    public Place() {
-    }
-
-    public Place(String name, String description, String placeId, String imagePath, String currentPageToken, String nextPageToken, UUID userRequestUuid) {
-        this.name = name;
-        this.description = description;
-        this.placeId = placeId;
-        this.imagePath = imagePath;
-        this.currentPageToken = currentPageToken;
-        this.nextPageToken = nextPageToken;
-        this.userRequestUuid = userRequestUuid;
-    }
-
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getPlaceId() {
-        return placeId;
-    }
-
-    public void setPlaceId(String placeId) {
-        this.placeId = placeId;
-    }
-
-    public String getImagePath() {
-        return imagePath;
-    }
-
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
-    }
-
-    public String getCurrentPageToken() {
-        return currentPageToken;
-    }
-
-    public void setCurrentPageToken(String currentPageToken) {
-        this.currentPageToken = currentPageToken;
-    }
-
-    public String getNextPageToken() {
-        return nextPageToken;
-    }
-
-    public void setNextPageToken(String nextPageToken) {
-        this.nextPageToken = nextPageToken;
-    }
-
-    public UUID getUserRequestUuid() {
-        return userRequestUuid;
-    }
-
-    public void setUserRequestUuid(UUID userRequestUuid) {
-        this.userRequestUuid = userRequestUuid;
-    }
 }
