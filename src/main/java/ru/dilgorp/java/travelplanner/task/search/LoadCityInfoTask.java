@@ -3,8 +3,8 @@ package ru.dilgorp.java.travelplanner.task.search;
 import com.google.maps.ImageResult;
 import com.google.maps.errors.ApiException;
 import com.google.maps.model.PlaceDetails;
+import lombok.SneakyThrows;
 import ru.dilgorp.java.travelplanner.domain.google.api.UserRequest;
-import ru.dilgorp.java.travelplanner.exception.IORuntimeException;
 import ru.dilgorp.java.travelplanner.repository.google.api.UserRequestRepository;
 import ru.dilgorp.java.travelplanner.task.search.options.SearchTaskOptions;
 
@@ -31,27 +31,25 @@ public class LoadCityInfoTask implements Runnable {
         loadCityInfo();
     }
 
+    @SneakyThrows
     private void loadCityInfo() {
-        try {
-            PlaceDetails placeDetails = searchTaskOptions
-                    .getPlaceApiService()
-                    .getCityDetails(
-                            cityName,
-                            searchTaskOptions.getLanguage()
-                    );
+
+        PlaceDetails placeDetails = searchTaskOptions
+                .getPlaceApiService()
+                .getCityDetails(
+                        cityName,
+                        searchTaskOptions.getLanguage()
+                );
 
 
-            UserRequest request = userRequestFromDB == null ? new UserRequest() : userRequestFromDB;
-            fillUserRequest(request, placeDetails, cityName);
+        UserRequest request = userRequestFromDB == null ? new UserRequest() : userRequestFromDB;
+        fillUserRequest(request, placeDetails, cityName);
 
-            searchTaskOptions.getUserRequestRepository().save(request);
-            if (placeDetails.photos != null && placeDetails.photos.length > 0) {
-                loadCityImage(placeDetails, request.getText());
-            }
-
-        } catch (Exception e) {
-            throw new IORuntimeException(e);
+        searchTaskOptions.getUserRequestRepository().save(request);
+        if (placeDetails.photos != null && placeDetails.photos.length > 0) {
+            loadCityImage(placeDetails, request.getText());
         }
+
     }
 
     private void loadCityImage(PlaceDetails placeDetails, String text) throws InterruptedException, ApiException, IOException {

@@ -1,5 +1,8 @@
 package ru.dilgorp.java.travelplanner.task.search.options.impl;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import ru.dilgorp.java.travelplanner.api.google.place.GooglePlaceApiService;
 import ru.dilgorp.java.travelplanner.file.FileService;
 import ru.dilgorp.java.travelplanner.repository.google.api.PlaceRepository;
@@ -8,78 +11,25 @@ import ru.dilgorp.java.travelplanner.task.search.options.SearchTaskOptions;
 
 import java.util.Objects;
 
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class SearchTaskOptionsImpl implements SearchTaskOptions {
 
+    @Getter
     private final String language;
+    @Getter
     private final String photosFolder;
+    @Getter
     private final int expiredDays;
+    @Getter
     private final int placesCount;
-
+    @Getter
     private final UserRequestRepository userRequestRepository;
+    @Getter
     private final PlaceRepository placeRepository;
+    @Getter
     private final GooglePlaceApiService placeApiService;
-
+    @Getter
     private final FileService fileService;
-
-    private SearchTaskOptionsImpl(
-            String language,
-            String photosFolder,
-            int expiredDays,
-            int placesCount,
-            UserRequestRepository userRequestRepository,
-            PlaceRepository placeRepository,
-            GooglePlaceApiService placeApiService,
-            FileService fileService
-    ) {
-        this.language = language;
-        this.photosFolder = photosFolder;
-        this.expiredDays = expiredDays;
-        this.placesCount = placesCount;
-        this.userRequestRepository = userRequestRepository;
-        this.placeRepository = placeRepository;
-        this.placeApiService = placeApiService;
-        this.fileService = fileService;
-    }
-
-    @Override
-    public String getLanguage() {
-        return language;
-    }
-
-    @Override
-    public String getPhotosFolder() {
-        return photosFolder;
-    }
-
-    @Override
-    public int getExpiredDays() {
-        return expiredDays;
-    }
-
-    @Override
-    public UserRequestRepository getUserRequestRepository() {
-        return userRequestRepository;
-    }
-
-    @Override
-    public PlaceRepository getPlaceRepository() {
-        return placeRepository;
-    }
-
-    @Override
-    public GooglePlaceApiService getPlaceApiService() {
-        return placeApiService;
-    }
-
-    @Override
-    public FileService getFileService() {
-        return fileService;
-    }
-
-    @Override
-    public int getPlacesCount() {
-        return placesCount;
-    }
 
     public static class Builder implements SearchTaskOptions.Builder {
 

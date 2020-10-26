@@ -1,6 +1,6 @@
 package ru.dilgorp.java.travelplanner.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.dilgorp.java.travelplanner.domain.CityPlace;
 import ru.dilgorp.java.travelplanner.domain.google.api.Place;
@@ -15,16 +15,11 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/places")
+@RequiredArgsConstructor
 public class PlaceController {
 
     private final CityPlaceRepository cityPlaceRepository;
     private final FileService fileService;
-
-    @Autowired
-    public PlaceController(CityPlaceRepository cityPlaceRepository, FileService fileService) {
-        this.cityPlaceRepository = cityPlaceRepository;
-        this.fileService = fileService;
-    }
 
     @GetMapping("/all")
     public Response<List<CityPlace>> getPlaces(

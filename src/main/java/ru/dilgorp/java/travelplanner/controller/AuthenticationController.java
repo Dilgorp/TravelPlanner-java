@@ -1,7 +1,10 @@
 package ru.dilgorp.java.travelplanner.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import ru.dilgorp.java.travelplanner.domain.Role;
 import ru.dilgorp.java.travelplanner.domain.User;
 import ru.dilgorp.java.travelplanner.domain.UserDTO;
@@ -11,17 +14,11 @@ import ru.dilgorp.java.travelplanner.response.ResponseType;
 
 import java.util.Collections;
 
-@SuppressWarnings("unused")
 @RestController
+@RequiredArgsConstructor
 public class AuthenticationController {
-
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
-
-    public AuthenticationController(UserRepository userRepository, BCryptPasswordEncoder encoder) {
-        this.userRepository = userRepository;
-        this.encoder = encoder;
-    }
 
     @PostMapping("/registration")
     public Response<User> postRegistration(@RequestBody UserDTO user) {

@@ -4,10 +4,10 @@ import com.google.maps.ImageResult;
 import com.google.maps.errors.ApiException;
 import com.google.maps.model.PlacesSearchResponse;
 import com.google.maps.model.PlacesSearchResult;
+import lombok.SneakyThrows;
 import ru.dilgorp.java.travelplanner.api.google.place.GooglePlaceApiService;
 import ru.dilgorp.java.travelplanner.domain.google.api.Place;
 import ru.dilgorp.java.travelplanner.domain.google.api.UserRequest;
-import ru.dilgorp.java.travelplanner.exception.IORuntimeException;
 import ru.dilgorp.java.travelplanner.repository.google.api.PlaceRepository;
 import ru.dilgorp.java.travelplanner.repository.google.api.UserRequestRepository;
 import ru.dilgorp.java.travelplanner.task.search.options.SearchTaskOptions;
@@ -48,6 +48,7 @@ public class LoadPlacesTask implements Runnable {
         }
     }
 
+    @SneakyThrows
     private void loadPlaces() {
         PlaceRepository placeRepository = searchTaskOptions.getPlaceRepository();
         UserRequestRepository userRequestRepository = searchTaskOptions.getUserRequestRepository();
@@ -67,27 +68,23 @@ public class LoadPlacesTask implements Runnable {
 
         String query = requestFromDB.getName().replace(' ', '+') + SEARCH_SUFFIX_PLACE_BY_CITY_NAME;
 
-        try {
-            PlacesSearchResponse places = apiService.getPlaces(query, searchTaskOptions.getLanguage(), pageToken);
-            nextPageToken = places.nextPageToken;
 
-            List<Place> placeList = new ArrayList<>();
-            for (PlacesSearchResult result : places.results) {
-                if (result.photos == null || result.photos.length == 0) {
-                    continue;
-                }
+        PlacesSearchResponse places = apiService.getPlaces(query, searchTaskOptions.getLanguage(), pageToken);
+        nextPageToken = places.nextPageToken;
 
-                Place place = new Place();
-                fillPlace(place, result);
-                placeList.add(place);
+        List<Place> placeList = new ArrayList<>();
+        for (PlacesSearchResult result : places.results) {
+            if (result.photos == null || result.photos.length == 0) {
+                continue;
             }
 
-            placeRepository.saveAll(placeList);
-            loadImages();
-
-        } catch (Exception e) {
-            throw new IORuntimeException(e);
+            Place place = new Place();
+            fillPlace(place, result);
+            placeList.add(place);
         }
+
+        placeRepository.saveAll(placeList);
+        loadImages();
     }
 
     private void loadImages() throws InterruptedException, ApiException, IOException {

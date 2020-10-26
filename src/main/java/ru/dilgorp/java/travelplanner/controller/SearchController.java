@@ -1,9 +1,11 @@
 package ru.dilgorp.java.travelplanner.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
 import ru.dilgorp.java.travelplanner.domain.City;
 import ru.dilgorp.java.travelplanner.domain.google.api.Place;
 import ru.dilgorp.java.travelplanner.domain.google.api.UserRequest;
@@ -19,8 +21,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-@SuppressWarnings("unused")
 @RestController
+@RequiredArgsConstructor
 public class SearchController {
 
     public static final String ASYNC_TASK_EXECUTOR_NAME = "ru.dilgorp.java.travelplanner.loadAsyncTaskExecutor";
@@ -28,21 +30,7 @@ public class SearchController {
     private final SearchTaskOptions searchTaskOptions;
     private final SyncTaskExecutor syncTaskExecutor;
     private final ThreadPoolTaskExecutor threadPoolTaskExecutor;
-
     private final CityRepository cityRepository;
-
-    @Autowired
-    public SearchController(
-            SearchTaskOptions searchTaskOptions,
-            SyncTaskExecutor syncTaskExecutor,
-            ThreadPoolTaskExecutor threadPoolTaskExecutor,
-            CityRepository cityRepository) {
-
-        this.searchTaskOptions = searchTaskOptions;
-        this.syncTaskExecutor = syncTaskExecutor;
-        this.threadPoolTaskExecutor = threadPoolTaskExecutor;
-        this.cityRepository = cityRepository;
-    }
 
     @GetMapping("/user/{user_uuid}/travel/{travel_uuid}/city/{city_uuid}/search/{cityname}")
     public Response<City> getCityInfo(

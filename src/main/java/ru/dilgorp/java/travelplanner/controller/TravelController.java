@@ -1,6 +1,6 @@
 package ru.dilgorp.java.travelplanner.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.dilgorp.java.travelplanner.domain.City;
 import ru.dilgorp.java.travelplanner.domain.CityPlace;
@@ -18,6 +18,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/user/{user_uuid}/travel")
+@RequiredArgsConstructor
 public class TravelController {
 
     private final DeletionManager deletionManager;
@@ -25,21 +26,6 @@ public class TravelController {
     private final CityRepository cityRepository;
     private final CityPlaceRepository cityPlaceRepository;
     private final FileService fileService;
-
-    @Autowired
-    public TravelController(
-            DeletionManager deletionManager,
-            TravelRepository travelRepository,
-            CityRepository cityRepository,
-            CityPlaceRepository cityPlaceRepository,
-            FileService fileService) {
-
-        this.deletionManager = deletionManager;
-        this.travelRepository = travelRepository;
-        this.cityRepository = cityRepository;
-        this.cityPlaceRepository = cityPlaceRepository;
-        this.fileService = fileService;
-    }
 
     @PostMapping("/add")
     public Response<Travel> addTravel(
