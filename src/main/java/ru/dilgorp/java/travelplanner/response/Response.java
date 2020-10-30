@@ -1,5 +1,8 @@
 package ru.dilgorp.java.travelplanner.response;
 
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode
 public class Response<T> {
     private final ResponseType type;
     private final String message;

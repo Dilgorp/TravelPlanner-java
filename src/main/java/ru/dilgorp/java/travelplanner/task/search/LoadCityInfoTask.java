@@ -41,6 +41,10 @@ public class LoadCityInfoTask implements Runnable {
                         searchTaskOptions.getLanguage()
                 );
 
+        if (placeDetails == null) {
+            return;
+        }
+
 
         UserRequest request = userRequestFromDB == null ? new UserRequest() : userRequestFromDB;
         fillUserRequest(request, placeDetails, cityName);

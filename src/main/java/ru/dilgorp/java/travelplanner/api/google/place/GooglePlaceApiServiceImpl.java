@@ -1,22 +1,19 @@
 package ru.dilgorp.java.travelplanner.api.google.place;
 
 import com.google.maps.*;
-import com.google.maps.errors.ApiException;
 import com.google.maps.model.FindPlaceFromText;
 import com.google.maps.model.PlaceDetails;
 import com.google.maps.model.PlacesSearchResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
-import java.io.IOException;
-
+@RequiredArgsConstructor
 public class GooglePlaceApiServiceImpl implements GooglePlaceApiService {
     private final GeoApiContext context;
 
-    public GooglePlaceApiServiceImpl(GeoApiContext context) {
-        this.context = context;
-    }
-
     @Override
-    public PlaceDetails getCityDetails(String cityName, String language) throws InterruptedException, ApiException, IOException {
+    @SneakyThrows
+    public PlaceDetails getCityDetails(String cityName, String language){
         FindPlaceFromText response =
                 PlacesApi.findPlaceFromText(
                         context,
@@ -34,12 +31,14 @@ public class GooglePlaceApiServiceImpl implements GooglePlaceApiService {
     }
 
     @Override
-    public ImageResult getImageDetails(String photoReference, int maxWidth) throws InterruptedException, ApiException, IOException {
+    @SneakyThrows
+    public ImageResult getImageDetails(String photoReference, int maxWidth){
         return PlacesApi.photo(context, photoReference).maxWidth(maxWidth).await();
     }
 
     @Override
-    public ImageResult getImageByPlaceId(String placeId, String language) throws InterruptedException, ApiException, IOException {
+    @SneakyThrows
+    public ImageResult getImageByPlaceId(String placeId, String language){
         PlaceDetails placeDetails = PlacesApi.placeDetails(context, placeId)
                 .language(language)
                 .await();
@@ -54,7 +53,8 @@ public class GooglePlaceApiServiceImpl implements GooglePlaceApiService {
     }
 
     @Override
-    public PlacesSearchResponse getPlaces(String query, String language, String pageToken) throws InterruptedException, ApiException, IOException {
+    @SneakyThrows
+    public PlacesSearchResponse getPlaces(String query, String language, String pageToken){
         TextSearchRequest textSearchRequest = PlacesApi.textSearchQuery(context, query);
         if (pageToken != null && !pageToken.isEmpty()) {
             textSearchRequest.pageToken(pageToken);

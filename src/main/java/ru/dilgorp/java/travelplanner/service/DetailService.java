@@ -18,7 +18,7 @@ public class DetailService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username){
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            throw new UsernameNotFoundException("User with email " + username + " was not found");
+            throw new UsernameNotFoundException("User with username " + username + " was not found");
         }
 
         return new org.springframework.security.core.userdetails.User(

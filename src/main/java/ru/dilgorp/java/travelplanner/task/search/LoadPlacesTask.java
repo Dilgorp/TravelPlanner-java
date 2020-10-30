@@ -4,6 +4,7 @@ import com.google.maps.ImageResult;
 import com.google.maps.errors.ApiException;
 import com.google.maps.model.PlacesSearchResponse;
 import com.google.maps.model.PlacesSearchResult;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import ru.dilgorp.java.travelplanner.api.google.place.GooglePlaceApiService;
 import ru.dilgorp.java.travelplanner.domain.google.api.Place;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 public class LoadPlacesTask implements Runnable {
 
     private static final String SEARCH_SUFFIX_PLACE_BY_CITY_NAME = "+city+point+of+interest";
@@ -26,16 +28,6 @@ public class LoadPlacesTask implements Runnable {
     private final String pageToken;
     private final SearchTaskOptions searchTaskOptions;
     private String nextPageToken = null;
-
-    public LoadPlacesTask(
-            UUID requestUUID,
-            String pageToken,
-            SearchTaskOptions searchTaskOptions
-    ) {
-        this.requestUUID = requestUUID;
-        this.pageToken = pageToken;
-        this.searchTaskOptions = searchTaskOptions;
-    }
 
     @Override
     public void run() {

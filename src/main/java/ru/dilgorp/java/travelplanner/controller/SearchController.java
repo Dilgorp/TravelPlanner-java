@@ -25,8 +25,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SearchController {
 
-    public static final String ASYNC_TASK_EXECUTOR_NAME = "ru.dilgorp.java.travelplanner.loadAsyncTaskExecutor";
-
     private final SearchTaskOptions searchTaskOptions;
     private final SyncTaskExecutor syncTaskExecutor;
     private final ThreadPoolTaskExecutor threadPoolTaskExecutor;
